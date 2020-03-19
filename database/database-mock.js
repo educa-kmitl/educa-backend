@@ -4,7 +4,29 @@
 class Database {
     constructor() {
         this.rooms = []
-        this.users = []
+        this.users = [
+            {
+                "id": 0,
+                "email": "yahoo",
+                "name": "jack",
+                "password": "1234",
+                "stat": 0
+            },
+            {
+                "id": 1,
+                "email": "gmail",
+                "name": "Kane",
+                "password": "abcd",
+                "stat": 0
+            },
+            {
+                "id": 2,
+                "email": "hotmail",
+                "name": "Rose",
+                "password": "1234",
+                "stat": 0
+            }
+        ]
         this.user_id = 0
     }
 
@@ -32,7 +54,7 @@ class Database {
         }
     }
 
-    findUser(email){
+    findUser(email) {
         const user = this.users.find(u => u.email == email)
         return user
     }
