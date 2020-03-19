@@ -29,7 +29,7 @@ class Database {
         } else {
             this.users.push({ id: this.user_id++, ...userData, stat: 0 })
             console.log(name);
-            return { response: "Successully registered" }
+            return { success: "Successully registered" }
         }
     }
 }
