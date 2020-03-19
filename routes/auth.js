@@ -36,6 +36,21 @@ router.get("/users", (req, res) => {
 })
 
 
+router.post("/create", (req, res) => {
+    const roomData = req.body
+
+    const room = client.addRoom(roomData)
+
+
+    res.json(room)
+})
+
+router.get("/rooms", (req, res) => {
+    const rooms = client.roomLists()
+    res.send(rooms)
+})
+
+
 
 
 module.exports = router

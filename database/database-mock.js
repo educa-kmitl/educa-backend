@@ -3,7 +3,17 @@
 
 class Database {
     constructor() {
-        this.rooms = []
+        this.rooms = [
+            {
+                "id": 0,
+                "host_id": 0,
+                "name": "HelloMath",
+                "subject": "Math",
+                "video_source": "https://www.youtube.com/watch?v=idSsF4ElmWo",
+                "available": true,
+                "url": "math0"
+            }
+        ]
         this.users = [
             {
                 "id": 0,
@@ -27,14 +37,10 @@ class Database {
                 "stat": 0
             }
         ]
-        this.user_id = 0
+
+        this.user_id = this.users.length - 1
+        this.room_id = this.rooms.length - 1
     }
-
-
-    roomList() {
-        return this.rooms
-    }
-
 
     usersList() {
         return this.users
@@ -57,6 +63,17 @@ class Database {
     findUser(email) {
         const user = this.users.find(u => u.email == email)
         return user
+    }
+
+
+    addRoom(roomData) {
+        const room = { ...roomData, id: this.room_id++ }
+        this.rooms.push(room)
+        return room
+    }
+
+    roomLists() {
+        return this.rooms
     }
 
 }
