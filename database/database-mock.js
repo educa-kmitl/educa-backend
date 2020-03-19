@@ -25,10 +25,9 @@ class Database {
         const user = this.users.find(u => u.email == email)
 
         if (user) {
-            return { error: "This email already exists" }
+            return { error: "Email already exists" }
         } else {
             this.users.push({ id: this.user_id++, ...userData, stat: 0 })
-            console.log(name);
             return { success: "Successully registered" }
         }
     }
