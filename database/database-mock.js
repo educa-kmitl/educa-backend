@@ -2,7 +2,6 @@
 
 
 class Database {
-
     constructor() {
         this.rooms = []
         this.users = []
@@ -30,10 +29,9 @@ class Database {
         } else {
             this.users.push({ id: this.user_id++, ...userData, stat: 0 })
             console.log(name);
-            return { success: "Successully registered" }
+            return { response: "Successully registered" }
         }
     }
-
 }
 
-export default Database
+module.exports = Database
