@@ -31,6 +31,12 @@ class Database {
             return { success: "Successully registered" }
         }
     }
+
+    findUser(email){
+        const user = this.users.find(u => u.email == email)
+        return user
+    }
+
 }
 
 module.exports = Database

@@ -13,9 +13,29 @@ router.post("/register", (req, res) => {
     }
 })
 
+
+router.post("/login", (req, res) => {
+    const { email, password } = req.body
+
+    // Check if email exists
+    const user = client.findUser(email)
+    if (!user) return res.status(400).send("Email is not found")
+
+    // Verify password
+    const validPass = (password == user.password)
+    if (!validPass) return res.status(400).send("Invalid password")
+
+    res.json({user})
+
+})
+
+
 router.get("/users", (req, res) => {
     const users = client.usersList()
     res.send(users)
 })
+
+
+
 
 module.exports = router

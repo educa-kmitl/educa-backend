@@ -13,6 +13,7 @@ app.use(express.json())
 
 app.use("/api/user", authRoute)
 
+// SOCKET IO //
 const server = http.createServer(app)
 const io = socketio(server)
 
