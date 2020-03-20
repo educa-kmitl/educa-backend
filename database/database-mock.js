@@ -38,8 +38,11 @@ class Database {
             }
         ]
 
-        this.user_id = this.users.length - 1
-        this.room_id = this.rooms.length - 1
+        this.followers = []
+
+        this.user_id = this.users.length
+        this.room_id = this.rooms.length
+        this.follower_id = this.followers.length
     }
 
     usersList() {
@@ -60,8 +63,8 @@ class Database {
         }
     }
 
-    findUser(email) {
-        const user = this.users.find(u => u.email == email)
+    findUser(id) {
+        const user = this.users.find(u => u.id == id)
         return user
     }
 
@@ -74,6 +77,14 @@ class Database {
 
     roomLists() {
         return this.rooms
+    }
+
+    updateFollower({ user_id, follower_id }) {
+        this.followers.push({ id: this.follower_id++, user_id, follower_id })
+    }
+
+    getFollowers() {
+        return this.followers
     }
 
 }

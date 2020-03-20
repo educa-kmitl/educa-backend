@@ -29,7 +29,6 @@ router.post("/login", (req, res) => {
 
 })
 
-
 router.get("/users", (req, res) => {
     const users = client.usersList()
     res.send(users)
@@ -40,8 +39,6 @@ router.post("/create", (req, res) => {
     const roomData = req.body
 
     const room = client.addRoom(roomData)
-
-
     res.json(room)
 })
 
@@ -50,7 +47,18 @@ router.get("/rooms", (req, res) => {
     res.send(rooms)
 })
 
+router.post("/follow", (req, res) => {
+    const { user_id, follower_id } = req.body
+    const user = client.findUser(user_id)
+    if(user){
+        client.updateFollower({ user_id, follower_id })
+        return res.send("successfully followed")
+    }
+    return res.status(400).send("Can't follow this user")
+})
 
-
+router.get("/followers", (req, res)=>{
+    res.send(client.getFollowers())
+})
 
 module.exports = router
