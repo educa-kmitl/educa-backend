@@ -18,12 +18,12 @@ router.post("/login", (req, res) => {
     const { email, password } = req.body
 
     // Check if email exists
-    const user = client.findUser(email)
-    if (!user) return res.status(400).send("Email is not found")
+    const user = client.findUserEmail(email)
+    if (!user) return res.status(400).json({ error: "Email is not found" })
 
     // Verify password
     const validPass = (password == user.password)
-    if (!validPass) return res.status(400).send("Invalid password")
+    if (!validPass) return res.status(400).json({ error: "Invalid password" })
 
     res.json(user)
 
@@ -50,14 +50,14 @@ router.get("/rooms", (req, res) => {
 router.post("/follow", (req, res) => {
     const { user_id, follower_id } = req.body
     const user = client.findUser(user_id)
-    if(user){
+    if (user) {
         client.updateFollower({ user_id, follower_id })
         return res.send("successfully followed")
     }
     return res.status(400).send("Can't follow this user")
 })
 
-router.get("/followers", (req, res)=>{
+router.get("/followers", (req, res) => {
     res.send(client.getFollowers())
 })
 

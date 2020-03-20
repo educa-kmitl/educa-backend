@@ -9,7 +9,13 @@ class Database {
                 "host_id": 0,
                 "name": "HelloMath",
                 "subject": "Math",
-                "video_source": "https://www.youtube.com/watch?v=idSsF4ElmWo",
+                "video_source": [{
+                    "topic": "math1",
+                    "link": "https://www.youtube.com/watch?v=idSsF4ElmWo"
+                },{
+                    "topic": "math2",
+                    "link": "https://www.youtube.com/watch?v=idSsF4ElmWo"
+                }],
                 "available": true,
                 "url": "math0"
             }
@@ -68,6 +74,10 @@ class Database {
         return user
     }
 
+    findUserEmail(email) {
+        const user = this.users.find(u => u.email == email)
+        return user
+    }
 
     addRoom(roomData) {
         const room = { ...roomData, id: this.room_id++ }
