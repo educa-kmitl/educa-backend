@@ -8,6 +8,7 @@ class Database {
                 "id": 0,
                 "host_id": 0,
                 "name": "HelloMath",
+                "password":"1234",
                 "subject": "Math",
                 "video_source": [{
                     "topic": "math1",
@@ -16,7 +17,7 @@ class Database {
                     "topic": "math2",
                     "link": "https://www.youtube.com/watch?v=idSsF4ElmWo"
                 }],
-                "available": true,
+                "private": true,
                 "url": "math0"
             }
         ]
@@ -46,8 +47,8 @@ class Database {
 
         this.followers = [{
             "id": 0,
-            user_id: 1,
-            follower_id: 2
+            "user_id": 1,
+            "follower_id": 2
         }]
 
         this.user_id = this.users.length
