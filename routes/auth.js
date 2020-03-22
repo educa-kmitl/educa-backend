@@ -25,7 +25,6 @@ router.post("/login", (req, res) => {
     const validPass = (password == user.password)
     if (!validPass) return res.status(400).json({ error: "Invalid password" })
     res.json({ user })
-
 })
 
 router.get("/users", (req, res) => {
