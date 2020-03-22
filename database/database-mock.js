@@ -12,7 +12,7 @@ class Database {
                 "video_source": [{
                     "topic": "math1",
                     "link": "https://www.youtube.com/watch?v=idSsF4ElmWo"
-                },{
+                }, {
                     "topic": "math2",
                     "link": "https://www.youtube.com/watch?v=idSsF4ElmWo"
                 }],
@@ -44,7 +44,11 @@ class Database {
             }
         ]
 
-        this.followers = []
+        this.followers = [{
+            "id": 0,
+            user_id: 1,
+            follower_id: 2
+        }]
 
         this.user_id = this.users.length
         this.room_id = this.rooms.length
@@ -69,8 +73,8 @@ class Database {
         }
     }
 
-    findUser(id) {
-        const user = this.users.find(u => u.id == id)
+    findUser(user_id) {
+        const user = this.users.find(u => u.id == user_id)
         return user
     }
 
@@ -93,8 +97,18 @@ class Database {
         this.followers.push({ id: this.follower_id++, user_id, follower_id })
     }
 
-    getFollowers() {
+    getFollowersTable() {
         return this.followers
+    }
+
+    getFollowers(user_id) {
+        const user_followers = this.followers.filter(row => row.user_id == user_id).map(row => ({ id: row.follower_id }))
+        return user_followers
+    }
+
+    getFollowings(user_id) {
+        const user_followings = this.followers.filter(row => row.follower_id == user_id).map(row => ({ id: row.user_id }))
+        return user_followings
     }
 
 }

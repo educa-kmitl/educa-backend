@@ -57,8 +57,20 @@ router.post("/follow", (req, res) => {
     return res.status(400).send("Can't follow this user")
 })
 
+router.get("/followers-table", (req, res) => {
+    res.send(client.getFollowersTable())
+})
+
 router.get("/followers", (req, res) => {
-    res.send(client.getFollowers())
+    const { id } = req.body
+    const followers = client.getFollowers(id)
+    res.send(followers)
+})
+
+router.get("/followings", (req, res) => {
+    const { id } = req.body
+    const followings = client.getFollowings(id)
+    res.send(followings)
 })
 
 module.exports = router
