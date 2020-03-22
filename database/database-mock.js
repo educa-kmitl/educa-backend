@@ -8,7 +8,7 @@ class Database {
                 "id": 0,
                 "host_id": 0,
                 "name": "HelloMath",
-                "password":"1234",
+                "password": "1234",
                 "subject": "Math",
                 "video_source": [{
                     "topic": "math1",
@@ -31,7 +31,7 @@ class Database {
             },
             {
                 "id": 1,
-                "email": "gmail",
+                "email": "gmail@gmail",
                 "name": "Kane",
                 "password": "abcd",
                 "stat": 0
@@ -69,8 +69,9 @@ class Database {
         if (user) {
             return { error: "Email already exists" }
         } else {
-            this.users.push({ id: this.user_id++, ...userData, stat: 0 })
-            return { success: "Successully registered" }
+            const newUser = { id: this.user_id++, ...userData, stat: 0 }
+            this.users.push(newUser)
+            return { user: newUser }
         }
     }
 

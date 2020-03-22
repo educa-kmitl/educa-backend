@@ -4,12 +4,12 @@ const Database = require("../database/database-mock")
 const client = new Database()
 
 router.post("/register", (req, res) => {
-    const { error, success } = client.addUser(req.body)
+    const { error, user } = client.addUser(req.body)
     if (error) {
         res.status(400).send({ error })
     }
     else {
-        res.send({ success })
+        res.send({ user })
     }
 })
 
@@ -24,8 +24,7 @@ router.post("/login", (req, res) => {
     // Verify password
     const validPass = (password == user.password)
     if (!validPass) return res.status(400).json({ error: "Invalid password" })
-
-    res.json(user)
+    res.json({ user })
 
 })
 
