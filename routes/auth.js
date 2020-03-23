@@ -10,6 +10,7 @@ router.post("/register", (req, res) => {
     }
     else {
         res.send({ user })
+        console.log(client.usersList())
     }
 })
 
@@ -25,6 +26,7 @@ router.post("/login", (req, res) => {
     const validPass = (password == user.password)
     if (!validPass) return res.status(400).json({ error: "Invalid password" })
     res.json({ user })
+    console.log(user)
 })
 
 router.get("/users", (req, res) => {
@@ -37,7 +39,8 @@ router.post("/create", (req, res) => {
     const roomData = req.body
 
     const room = client.addRoom(roomData)
-    res.json(room)
+    res.json({ room })
+    console.log('Room created!')
 })
 
 router.get("/rooms", (req, res) => {
@@ -71,4 +74,4 @@ router.get("/followings", (req, res) => {
     res.send(followings)
 })
 
-module.exports = router
+module.exports = { router, client }
