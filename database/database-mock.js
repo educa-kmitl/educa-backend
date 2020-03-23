@@ -18,9 +18,14 @@ class Database {
                     "link": "https://www.youtube.com/watch?v=idSsF4ElmWo"
                 }],
                 "private": true,
-                "url": "math0"
+                "url": "math0",
+                "users_online": [{
+                    "socket_id": "0",
+                    "name": "guest"
+                }]
             }
         ]
+
         this.users = [
             {
                 "id": 0,
@@ -91,6 +96,11 @@ class Database {
         return room
     }
 
+    findRoom(room_id) {
+        const room = this.rooms.find(r => r.id == room_id)
+        return room
+    }
+
     roomLists() {
         return this.rooms
     }
@@ -112,6 +122,20 @@ class Database {
         const user_followings = this.followers.filter(row => row.follower_id == user_id).map(row => ({ id: row.user_id }))
         return user_followings
     }
+
+    addUserToRoom({ socket_id, name }, room_id) {
+        const room = this.findRoom(room_id)
+        room.users_online.push({ socket_id, name })
+        return room
+    }
+
+    removeUserFromRoom(socket_id, room_id) {
+        const room = this.findRoom(room_id)
+        const user = room.users_online.find(u => u.socket_id == socket_id)
+        room = room.users_online.filter(u => u.socket_id !== socket_id)
+        return user
+    }
+
 
 }
 
