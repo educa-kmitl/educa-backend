@@ -123,20 +123,6 @@ class Database {
         return user_followings
     }
 
-    addUserToRoom({ socket_id, name }, room_id) {
-        const room = this.findRoom(room_id)
-        room.users_online.push({ socket_id, name })
-        return room
-    }
-
-    removeUserFromRoom(socket_id, room_id) {
-        const room = this.findRoom(room_id)
-        const user = room.users_online.find(u => u.socket_id == socket_id)
-        room = room.users_online.filter(u => u.socket_id !== socket_id)
-        return user
-    }
-
-
 }
 
 module.exports = Database

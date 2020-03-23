@@ -20,26 +20,13 @@ const io = socketio(server)
 io.on("connection", socket => {
     console.log("We have a new connection")
 
-<<<<<<< HEAD
     socket.on("join", ({ room_id }, callback) => {
-=======
-    socket.on("join", ({ room_id, name }, callback) => {
-        io.to(room_id).emit("message", { name: 's3rver', text: `${name} has joined` })
->>>>>>> than
         socket.join(room_id)
-        auth.client.addUserToRoom({ socket_id: socket.id, name }, room_id)
         callback()
-    })
-
-    socket.on("disconnect", ({ room_id }) => {
-        const user = auth.client.removeUserFromRoom(socket.id, room_id)
-        io.to(room_id).emit("message", { name: 's3rver', text: `${user.name} has left` })
-        console.log(user.name + 'left')
     })
 
     socket.on("sendMessage", ({ message, room_id, name }) => {
         io.to(room_id).emit("message", { name, text: message })
-        console.log(room_id + message + name)
     })
 })
 
