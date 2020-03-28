@@ -45,7 +45,27 @@ router.post("/create", (req, res) => {
 
 router.get("/rooms", (req, res) => {
     const rooms = client.roomLists()
-    res.send(rooms)
+    res.send({ rooms })
+})
+
+router.post("/myrooms", (req, res) => {
+    const { teacher_id } = req.body
+    const rooms = client.getRoomByTeacherID(teacher_id)
+    res.send({ rooms })
+})
+
+router.post("/room-password", (req, res) => {
+    console.log('someone try to enter locked room')
+    const { room_id, password } = req.body
+
+    // Check if email exists
+    const room = client.findRoom(room_id)
+    if (!room) return res.status(400).json({ error: "Room not exist" })
+
+    // Verify password
+    const validPass = (password == room.password)
+    if (!validPass) return res.status(400).json({ error: "Invalid password" })
+    res.json({ success: "Nice try!" })
 })
 
 router.post("/follow", (req, res) => {
