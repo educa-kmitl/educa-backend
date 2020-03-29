@@ -6,47 +6,92 @@ class Database {
         this.rooms = [
             {
                 "id": 0,
-                "host_id": 0,
-                "name": "HelloMath",
-                "password": "1234",
+                "teacher_id": 0,
+                "name": "Trigonometric",
+                "password": "",
                 "subject": "Math",
                 "video_source": [{
-                    "topic": "math1",
-                    "link": "https://www.youtube.com/watch?v=idSsF4ElmWo"
-                }, {
-                    "topic": "math2",
-                    "link": "https://www.youtube.com/watch?v=idSsF4ElmWo"
+                    "topic": "Trigonometric with Hand",
+                    "link": "https://www.youtube.com/embed/tA1TqPGCPNk",
                 }],
-                "private": true,
-                "url": "math0",
-                "users_online": [{
-                    "socket_id": "0",
-                    "name": "guest"
-                }]
+                "private": false
+            },
+            {
+                "id": 1,
+                "teacher_id": 0,
+                "name": "English songs",
+                "password": "",
+                "subject": "English",
+                "video_source": [{
+                    "topic": "บทที่1 จุ๋ยส์ จุ๋ยส์",
+                    "link": "https://www.youtube.com/embed/LmfoStWxQbg",
+                }, {
+                    "topic": "Love Yellow - TangBadVoice",
+                    "link": "https://www.youtube.com/embed/rjlqpMdkJpM",
+                }], 
+                "private": false
+            },
+            {
+                "id": 2,
+                "teacher_id": 0,
+                "name": "Educa Secret",
+                "password": "secret",
+                "subject": "English",
+                "video_source": [{
+                    "topic": "Short meme",
+                    "link": "https://www.youtube.com/embed/iH_yb94ZACA",
+                }, {
+                    "topic": "DOTA Meme",
+                    "link": "https://www.youtube.com/embed/jHWc4qKkmoc",
+                }],
+                "private": true
+            },
+            {
+                "id": 3,
+                "teacher_id": 0,
+                "name": "UI/UX Design",
+                "password": "",
+                "subject": "Computer",
+                "video_source": [{
+                    "topic": "Trends 2020",
+                    "link": "https://www.youtube.com/embed/6DdUkxajANs",
+                }, {
+                    "topic": "What is the UX design process?",
+                    "link": "https://www.youtube.com/embed/Um3BhY0oS2c",
+                }, {
+                    "topic": "UX vs UI Design",
+                    "link": "https://www.youtube.com/embed/hQ1rpJKyj68",
+                }, {
+                    "topic": "Common Design Patterns",
+                    "link": "https://www.youtube.com/embed/aB6us_txi54",
+                }, {
+                    "topic": "Negetive space",
+                    "link": "https://www.youtube.com/embed/A0Ev_4zto4Y",
+                }],
+                "private": false
+            },
+            {
+                "id": 4,
+                "teacher_id": 0,
+                "name": "The World",
+                "password": "",
+                "subject": "Science",
+                "video_source": [{
+                    "topic": "Deep sea",
+                    "link": "https://www.youtube.com/embed/PaErPyEnDvk",
+                }], 
+                "private": false
             }
         ]
 
         this.users = [
             {
                 "id": 0,
-                "email": "yahoo",
-                "name": "jack",
-                "password": "1234",
-                "stat": 0
-            },
-            {
-                "id": 1,
-                "email": "gmail@gmail",
-                "name": "Kane",
-                "password": "abcd",
-                "stat": 0
-            },
-            {
-                "id": 2,
-                "email": "hotmail",
-                "name": "Rose",
-                "password": "1234",
-                "stat": 0
+                "email": "educa@edu.bot",
+                "name": "Educa",
+                "password": "educabot",
+                "profile_icon": 0,
+                "role": 1
             }
         ]
 
@@ -67,9 +112,7 @@ class Database {
 
     addUser(userData) {
 
-        const { email, password, name } = userData
-
-        const user = this.users.find(u => u.email == email)
+        const user = this.users.find(u => u.email == userData.email)
 
         if (user) {
             return { error: "Email already exists" }
@@ -103,6 +146,10 @@ class Database {
 
     roomLists() {
         return this.rooms
+    }
+
+    getRoomByTeacherID(teacher_id) {
+        return this.rooms.filter(room => room.teacher_id == teacher_id)
     }
 
     updateFollower({ user_id, follower_id }) {
