@@ -81,7 +81,7 @@ class Database {
                     "link": "https://www.youtube.com/embed/PaErPyEnDvk",
                 }], 
                 "private": false
-            }
+            },
         ]
 
         this.users = [
