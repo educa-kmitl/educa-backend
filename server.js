@@ -14,31 +14,31 @@ mountRoutes(app)
 
 // SOCKET IO //
 const server = http.createServer(app)
-const io = socketio(server)
+// const io = socketio(server)
 
-io.on("connection", socket => {
-    console.log("We have a new connection")
+// io.on("connection", socket => {
+//     console.log("We have a new connection")
 
-    socket.on("join", ({ room_id, name }, callback) => {
-        io.to(room_id).emit("message", { name: 's3rver', text: `${name} has joined` })
-        socket.join(room_id)
+//     socket.on("join", ({ room_id, name }, callback) => {
+//         io.to(room_id).emit("message", { name: 's3rver', text: `${name} has joined` })
+//         socket.join(room_id)
 
-        const room = auth.client.findRoom(room_id)
-        socket.emit("room-data", { room })
-        console.log(room)
-        callback()
-    })
+//         const room = auth.client.findRoom(room_id)
+//         socket.emit("room-data", { room })
+//         console.log(room)
+//         callback()
+//     })
 
-    socket.on("sendMessage", ({ message, room_id, name }) => {
-        io.to(room_id).emit("message", { name, text: message })
-    })
+//     socket.on("sendMessage", ({ message, room_id, name }) => {
+//         io.to(room_id).emit("message", { name, text: message })
+//     })
 
-    socket.on("disconnect", ({ room_id, name }) => {
-        io.to(room_id).emit("message", { name: 's3rver', text: `${name} has left` })
-        socket.disconnect()
-        console.log(`${name} left room ${room_id}`)
-    })
-})
+//     socket.on("disconnect", ({ room_id, name }) => {
+//         io.to(room_id).emit("message", { name: 's3rver', text: `${name} has left` })
+//         socket.disconnect()
+//         console.log(`${name} left room ${room_id}`)
+//     })
+// })
 
 server.listen(PORT, () => {
     console.log(`Server starts on port ${PORT}`)

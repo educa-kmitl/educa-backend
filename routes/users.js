@@ -5,18 +5,18 @@ const router = new Router()
 
 router.get('/users', async (req, res) => {
     const { user_id } = req.body
-    if (!user_id) return res.status(404).json({ error: "User not found" })
+    if (!user_id) return res.status(404).json({ error: 'User not found' })
 
-    const { rows } = await db.query('SELECT * FROM users WHERE user_id = $1', [user_id])
+    const { rows } = await db.query('SELECT name, profile_icon, role FROM users WHERE user_id = $1', [user_id])
 
-    if (rows.length == 0) return res.status(404).json({ error: "User not found" })
+    if (rows.length == 0) return res.status(404).json({ error: 'User not found' })
 
-    const user = Object.keys(rows[0]).reduce((accumulator, currentKey) => {
-        if (currentKey != "password")
-            accumulator[currentKey] = rows[0][currentKey]
-        return accumulator
-    }, {})
-    res.json(user)
+    res.json(rows[0])
+})
+
+router.get('/all-teachers', async (req, res) => {
+    const { rows } = await db.query('SELECT user_id, name, profile_icon FROM users WHERE role=true')
+    res.json(rows)
 })
 
 module.exports = router
