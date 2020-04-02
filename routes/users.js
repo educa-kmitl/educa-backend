@@ -9,6 +9,8 @@ router.get('/users', async (req, res) => {
 
     const { rows } = await db.query('SELECT * FROM users WHERE user_id = $1', [user_id])
 
+    if (rows.length == 0) return res.status(404).json({ error: "User not found" })
+
     const user = Object.keys(rows[0]).reduce((accumulator, currentKey) => {
         if (currentKey != "password")
             accumulator[currentKey] = rows[0][currentKey]
