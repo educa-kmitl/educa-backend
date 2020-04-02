@@ -5,13 +5,12 @@ const cors = require("cors")
 
 const PORT = process.env.PORT || 5000
 
-const auth = require("./routes/auth")
-
 const app = express()
 app.use(cors())
 app.use(express.json())
 
-app.use("/api/user", auth.router)
+const mountRoutes = require('./routes')
+mountRoutes(app)
 
 // SOCKET IO //
 const server = http.createServer(app)
@@ -23,7 +22,7 @@ io.on("connection", socket => {
     socket.on("join", ({ room_id, name }, callback) => {
         io.to(room_id).emit("message", { name: 's3rver', text: `${name} has joined` })
         socket.join(room_id)
-        
+
         const room = auth.client.findRoom(room_id)
         socket.emit("room-data", { room })
         console.log(room)
