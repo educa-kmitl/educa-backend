@@ -7,7 +7,7 @@ const pool = new Pool({
     // database: process.env.DATABASE,
     // password: process.env.PASSWORD,
     // port: process.env.PORT,
-    connectionString: process.env.PGURI,
+    connectionString: process.env.DATABASE_URL,
     ssl: true
 })
 
