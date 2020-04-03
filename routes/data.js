@@ -22,4 +22,16 @@ router.get('/rooms', async (req, res) => {
     res.json(roomData)
 })
 
+router.get("/all-rooms", async (req, res) => {
+    const { rows } = await db.query("SELECT room_id, users.name AS teacher_name, rooms.name, subject, private, time AS date_created FROM rooms INNER JOIN users ON rooms.teacher_id = users.user_id")
+    const roomData = []
+    for (let i = 0; i < rows.length; i++) {
+        const room = rows[i]
+        const roomResources = await db.query("SELECT resource_id FROM resources WHERE room_id=$1", [room.room_id])
+        roomData.push({ ...room, resource_length: roomResources.rows.length })
+    }
+
+    res.json(roomData)
+})
+
 module.exports = router
