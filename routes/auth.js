@@ -14,14 +14,14 @@ router.post("/register", async (req, res) => {
         if (checkUser.rows.length > 0) return res.status(400).json({ error: "Email already exists" })
 
         // Hash passwords
-        const salt = await bcrypt.genSalt(10)
-        const hashedPassword = await bcrypt.hash(password, salt)
+        //const salt = await bcrypt.genSalt(10)
+        //const hashedPassword = await bcrypt.hash(password, salt)
 
         // If not exists
         const query = {
             name: 'insert-user',
             text: 'INSERT INTO users (email, name, password, profile_icon, role) VALUES ($1, $2, $3, $4, $5)',
-            values: [email, name, hashedPassword, profile_icon, role],
+            values: [email, name, password, profile_icon, role],
         }
         await db.query(query)
 
@@ -40,7 +40,8 @@ router.post("/login", async (req, res) => {
     if (rows.length == 0) {
         return res.status(400).json({ error: "Email not found" })
     } else {
-        if (rows[0].password != password) {
+
+        if (rows[9].password != password) {
             return res.status(400).json({ error: "Invalid password" })
         } else {
             return res.json({ user: rows[0] })
