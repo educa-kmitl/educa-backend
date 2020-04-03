@@ -7,7 +7,7 @@ router.get('/users', async (req, res) => {
     const { user_id } = req.body
     if (!user_id) return res.status(404).json({ error: 'User not found' })
 
-    const user = await db.query('SELECT name, profile_icon, role FROM users WHERE user_id = $1', [user_id])
+    const user = await db.query('SELECT user_id, name, profile_icon, role FROM users WHERE user_id = $1', [user_id])
     if (user.rows.length == 0) return res.status(404).json({ error: 'User not found' })
 
     let likes = 0

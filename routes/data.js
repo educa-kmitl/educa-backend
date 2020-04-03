@@ -1,6 +1,8 @@
 const Router = require('express-promise-router')
 const router = new Router()
 
+const db = require("../db")
+
 router.get('/rooms', async (req, res) => {
     const { room_id } = req.body
     if (!room_id) return res.json({ error: 'Room not found' })
@@ -10,7 +12,7 @@ router.get('/rooms', async (req, res) => {
 
     const teacher = await db.query('SELECT name FROM users WHERE user_id=$1', [rooms.rows[0].teacher_id])
 
-    const resources = await db.query('SELECT resource_id, topic, video_url, file_url from rooms r INNER JOIN resources rs ON r.room_id=rs.room_id')
+    const resources = await db.query('SELECT * from resources WHERE room_id=$1', [room_id])
 
     const roomData = {
         ...rooms.rows[0],
