@@ -14,14 +14,14 @@ router.post("/register", async (req, res) => {
         if (checkUser.rows.length > 0) return res.status(400).json({ error: "Email already exists" })
 
         // Hash passwords
-        //const salt = await bcrypt.genSalt(10)
-        //const hashedPassword = await bcrypt.hash(password, salt)
+        const salt = await bcrypt.genSalt(10)
+        const hashedPassword = await bcrypt.hash(password, salt)
 
         // If not exists
         const query = {
             name: 'insert-user',
             text: 'INSERT INTO users (email, name, password, profile_icon, role) VALUES ($1, $2, $3, $4, $5)',
-            values: [email, name, password, profile_icon, role],
+            values: [email, name, hashedPassword, profile_icon, role],
         }
         await db.query(query)
 
@@ -37,14 +37,17 @@ router.post("/login", async (req, res) => {
     const { email, password } = req.body
     const { rows } = await db.query("SELECT * FROM users WHERE email=$1", [email])
 
+    if (!(email && password)) return res.status(400).json({ error: "Can't login" })
+
     if (rows.length == 0) {
         return res.status(400).json({ error: "Email not found" })
     } else {
+        const validPass = await bcrypt.compare(password, rows[0].password)
 
-        if (rows[9].password != password) {
+        if (!validPass) {
             return res.status(400).json({ error: "Invalid password" })
         } else {
-            return res.json({ user: rows[0] })
+            return res.json({ user: { ...rows[0], password: null } })
         }
     }
 })
