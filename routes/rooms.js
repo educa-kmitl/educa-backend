@@ -1,7 +1,8 @@
 const Router = require('express-promise-router')
-const router = new Router()
-
+const bcrypt = require("bcryptjs")
 const db = require("../db")
+
+const router = new Router()
 
 router.get('/rooms', async (req, res) => {
     const { room_id } = req.body
@@ -33,7 +34,6 @@ router.get("/all-rooms", async (req, res) => {
 
     res.json({ rooms: roomData })
 })
-
 
 router.post("/rooms", async (req, res) => {
     const { name, subject, private, password, resources, teacher_id, date_created } = req.body
@@ -70,6 +70,25 @@ router.post("/rooms", async (req, res) => {
         res.json({ room: { room_id } })
     } else {
         res.status(400).json({ error: "Can't create room" })
+    }
+})
+
+router.delete("/rooms", async (req, res) => {
+    const { room_id, teacher_id, password } = req.body
+
+    if (room_id && teacher_id && password) {
+        const { rows } = await db.query("SELECT password from users WHERE user_id=$1", [teacher_id])
+        const validPass = await bcrypt.compare(password, rows[0].password)
+        if (!validPass) return res.status(400).json({ error: "Invalid password" })
+
+        const result = await db.query("DELETE FROM rooms WHERE room_id=$1", [room_id])
+        if (result.rowCount == 1) {
+            return res.json({ success: `Room ${room_id} was deleted` })
+        } else {
+            return res.status(400).json({ error: "Can't delete this room" })
+        }
+    } else {
+        res.status(400).json({ error: "Can't delete this room" })
     }
 })
 
