@@ -5,11 +5,13 @@ const db = require("../db")
 const router = new Router()
 
 router.get('/rooms', async (req, res) => {
-    const { room_id } = req.headers
+    const { room_id, password } = req.headers
     if (!room_id) return res.json({ error: 'Room not found' })
 
-    const rooms = await db.query('SELECT name, subject, private, time, teacher_id FROM rooms WHERE room_id=$1', [room_id])
+    const rooms = await db.query('SELECT name, subject, private, password, time, teacher_id FROM rooms WHERE room_id=$1', [room_id])
     if (rooms.rows.length == 0) return res.json({ error: 'Room not found' })
+
+    if (rooms.rows[0].private && (rooms.rows[0].password != password)) return res.status(400).json({ error: "Invalid password" })
 
     const teacher = await db.query('SELECT name FROM users WHERE user_id=$1', [rooms.rows[0].teacher_id])
 
