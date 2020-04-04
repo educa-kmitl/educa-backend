@@ -4,7 +4,7 @@ const router = new Router()
 const db = require('../db')
 
 router.get('/users', async (req, res) => {
-    const { user_id } = req.body
+    const { user_id } = req.headers
     if (!user_id) return res.status(404).json({ error: 'User not found' })
 
     const user = await db.query('SELECT user_id, name, profile_icon, role FROM users WHERE user_id = $1', [user_id])

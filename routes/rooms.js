@@ -5,7 +5,7 @@ const db = require("../db")
 const router = new Router()
 
 router.get('/rooms', async (req, res) => {
-    const { room_id } = req.body
+    const { room_id } = req.headers
     if (!room_id) return res.json({ error: 'Room not found' })
 
     const rooms = await db.query('SELECT name, subject, private, time, teacher_id FROM rooms WHERE room_id=$1', [room_id])
@@ -72,6 +72,18 @@ router.post("/rooms", async (req, res) => {
         res.status(400).json({ error: "Can't create room" })
     }
 })
+
+router.get("/room-privacy", async (req, res) => {
+    const { room_id } = req.headers
+    if (room_id) {
+        const { rows } = await db.query("SELECT private FROM rooms WHERE room_id=$1", [room_id])
+        if (rows.length == 0) return res.status(400).json({ error: "Room not found" })
+        else return res.json({ lock: rows[0].private })
+    } else {
+        res.status(400).json({ error: "Can't get room privacy" })
+    }
+})
+
 
 router.delete("/rooms", async (req, res) => {
     const { room_id, teacher_id, password } = req.body
