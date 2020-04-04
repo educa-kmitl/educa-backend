@@ -86,7 +86,6 @@ router.get("/room-privacy", async (req, res) => {
     }
 })
 
-
 router.delete("/rooms", async (req, res) => {
     const { room_id, teacher_id, password } = req.body
 
@@ -104,6 +103,42 @@ router.delete("/rooms", async (req, res) => {
     } else {
         res.status(400).json({ error: "Can't delete this room" })
     }
+})
+
+router.patch("/rooms", async (req, res) => {
+    const { room_id, teacher_password, name, private, password, subject } = req.body
+
+    if (!(room_id && teacher_password)) return res.status(400).json({ error: "Can't update room" })
+    if (typeof teacher_password != "string") return res.status(400).json({ error: "Invalid password" })
+
+    const room = await db.query("SELECT * FROM rooms WHERE room_id=$1", [room_id])
+
+    if (room.rows.length == 0) return res.status(404).json({ error: "Rooom not found" })
+
+    const user = await db.query("SELECT password FROM users WHERE user_id=$1", [room.rows[0].teacher_id])
+
+    const validPass = await bcrypt.compare(teacher_password, user.rows[0].password)
+    if (!validPass) return res.status(400).json({ error: "Invalid password" })
+
+    const { name: default_name, private: default_private, password: default_password, subject: default_subject } = room.rows[0]
+    const query = {
+        name: "update room",
+        text: "UPDATE rooms SET name=$1, private=$2, password=$3, subject=$4 WHERE room_id=$5",
+        values: [
+            name ? name : default_name,
+            (typeof private == 'boolean') ? private : default_private,
+            password ? password : default_password,
+            subject ? subject : default_subject,
+            room_id
+        ]
+    }
+
+    const { rowCount } = await db.query(query)
+    if (rowCount)
+        res.json({ room: { room_id } })
+    else
+        res.status(400).json({ error: "Can't update this room" })
+
 })
 
 module.exports = router
