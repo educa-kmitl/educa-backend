@@ -19,7 +19,7 @@ router.get('/rooms', async (req, res) => {
         teacher_name: teacher.rows[0].name,
         resources: resources.rows
     }
-    res.json(roomData)
+    res.json({ room: roomData })
 })
 
 router.get("/all-rooms", async (req, res) => {
@@ -31,7 +31,31 @@ router.get("/all-rooms", async (req, res) => {
         roomData.push({ ...room, resource_length: roomResources.rows.length })
     }
 
-    res.json(roomData)
+    res.json({ rooms: roomData })
+})
+
+
+router.post("/rooms", async (req, res) => {
+    const { name, subject, private, password, resources, teacher_id, date_created } = req.body
+
+    if (name && subject && (private != undefined) && resources && teacher_id && date_created) {
+        if (private && !password) return res.status(400).json({ error: "Can't create room" })
+
+        const { rows } = await db.query("SELECT name FROM rooms WHERE name=$1", [name])
+        if (rows.length > 0) return res.status(400).json({ error: `Name "${name}" is already used` })
+
+        const query = {
+            name: 'insert-room',
+            text: 'INSERT INTO rooms (name, subject, private, password, teacher_id, time) VALUES ($1, $2, $3, $4, $5, $6)',
+            values: [name, subject, private, (password && private) ? password : null, teacher_id, date_created],
+        }
+
+        await db.query(query)
+        const room = await db.query("SELECT room_id FROM rooms WHERE name=$1", [name])
+        res.json({ room: { ...room.rows[0] } })
+    } else {
+        res.status(400).json({ error: "Can't create room" })
+    }
 })
 
 module.exports = router
