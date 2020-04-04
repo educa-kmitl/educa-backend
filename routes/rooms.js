@@ -44,15 +44,30 @@ router.post("/rooms", async (req, res) => {
         const { rows } = await db.query("SELECT name FROM rooms WHERE name=$1", [name])
         if (rows.length > 0) return res.status(400).json({ error: `Name "${name}" is already used` })
 
-        const query = {
+        // Insert room
+        const roomQuery = {
             name: 'insert-room',
             text: 'INSERT INTO rooms (name, subject, private, password, teacher_id, time) VALUES ($1, $2, $3, $4, $5, $6)',
             values: [name, subject, private, (password && private) ? password : null, teacher_id, date_created],
         }
+        await db.query(roomQuery)
 
-        await db.query(query)
+        // Get room_id after insert
         const room = await db.query("SELECT room_id FROM rooms WHERE name=$1", [name])
-        res.json({ room: { ...room.rows[0] } })
+        const { room_id } = room.rows[0]
+
+        // Insert resources
+        for (let i = 0; i < resources.length; i++) {
+            const { topic, video_url, file_url } = resources[i]
+            const resourceQuery = {
+                name: 'insert-resource',
+                text: 'INSERT INTO resources (topic, video_url, file_url, room_id) VALUES ($1, $2, $3, $4)',
+                values: [topic, video_url, file_url ? file_url : null, room_id]
+            }
+            await db.query(resourceQuery)
+        }
+
+        res.json({ room: { room_id } })
     } else {
         res.status(400).json({ error: "Can't create room" })
     }
