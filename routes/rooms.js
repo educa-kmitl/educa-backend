@@ -23,7 +23,7 @@ router.get('/rooms', async (req, res) => {
 })
 
 router.get("/all-rooms", async (req, res) => {
-    const { rows } = await db.query("SELECT room_id, users.name AS teacher_name, rooms.name, subject, private, time AS date_created FROM rooms INNER JOIN users ON rooms.teacher_id = users.user_id")
+    const { rows } = await db.query("SELECT room_id, users.user_id AS teacher_id, users.name AS teacher_name, rooms.name, subject, private, time AS date_created FROM rooms INNER JOIN users ON rooms.teacher_id = users.user_id")
     const roomData = []
     for (let i = 0; i < rows.length; i++) {
         const room = rows[i]
