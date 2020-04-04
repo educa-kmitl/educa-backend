@@ -3,6 +3,7 @@ const users = require('./users')
 const rooms = require("./rooms")
 const resources = require("./resources")
 const comments = require("./comments")
+const followers = require("./followers")
 const dev = require("./dev")
 
 module.exports = app => {
@@ -11,5 +12,6 @@ module.exports = app => {
   app.use("/api", rooms)
   app.use("/api", resources)
   app.use("/api", comments)
+  app.use("/api", followers)
   app.use("/api/dev", dev)
 }
