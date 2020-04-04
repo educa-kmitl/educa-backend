@@ -1,7 +1,7 @@
 const Router = require('express-promise-router')
-const router = new Router()
-
 const db = require('../db')
+
+const router = new Router()
 
 router.get('/users', async (req, res) => {
     const { user_id } = req.headers
