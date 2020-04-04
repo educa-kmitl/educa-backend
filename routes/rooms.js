@@ -38,7 +38,7 @@ router.get("/all-rooms", async (req, res) => {
 router.post("/rooms", async (req, res) => {
     const { name, subject, private, password, resources, teacher_id, date_created } = req.body
 
-    if (name && subject && (private != undefined) && resources && teacher_id && date_created) {
+    if (name && subject && (typeof private === "boolean") && resources && teacher_id && date_created) {
         if (private && !password) return res.status(400).json({ error: "Can't create room" })
 
         const { rows } = await db.query("SELECT name FROM rooms WHERE name=$1", [name])

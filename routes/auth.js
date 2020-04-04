@@ -7,7 +7,7 @@ const router = new Router()
 router.post("/register", async (req, res) => {
     const { email, name, password, role, profile_icon } = req.body
 
-    if (email && name && password && profile_icon && (role != undefined)) {
+    if (email && name && password && profile_icon && ((typeof role === "boolean"))) {
 
         // Check if email already exists
         const checkUser = await db.query("SELECT * FROM users WHERE email=$1", [email])
