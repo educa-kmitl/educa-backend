@@ -19,7 +19,7 @@ router.get('/users', async (req, res) => {
             likes = allLikes.rows.length
         }
     }
-    res.json({ ...user.rows[0], likes })
+    res.json({ user: { ...user.rows[0], likes } })
 
 })
 
@@ -35,9 +35,9 @@ router.get('/all-teachers', async (req, res) => {
             const allLikes = await db.query(`SElECT * FROM likes WHERE room_id IN (${room_ids})`)
             likes = allLikes.rows.length
         }
-        teacherData.push({...rows[i], likes})
+        teacherData.push({ ...rows[i], likes })
     }
-    res.json(teacherData)
+    res.json({ teachers: teacherData })
 })
 
 
