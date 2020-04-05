@@ -1,11 +1,19 @@
-const users = require('./users')
 const auth = require("./auth")
-const data = require("./data")
+const users = require('./users')
+const rooms = require("./rooms")
+const resources = require("./resources")
+const comments = require("./comments")
+const followers = require("./followers")
+const likes = require("./likes")
 const dev = require("./dev")
 
 module.exports = app => {
-  app.use('/api', users)
   app.use("/api", auth)
-  app.use("/api", data)
+  app.use('/api', users)
+  app.use("/api", rooms)
+  app.use("/api", resources)
+  app.use("/api", comments)
+  app.use("/api", followers)
+  app.use("/api", likes)
   app.use("/api/dev", dev)
 }
