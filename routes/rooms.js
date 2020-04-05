@@ -109,7 +109,7 @@ router.patch("/rooms", async (req, res) => {
     const { room_id, teacher_password, name, private, password, subject } = req.body
 
     if (!(room_id && teacher_password)) return res.status(400).json({ error: "Can't update room" })
-    if (typeof teacher_password != "string") return res.status(400).json({ error: "Invalid password" })
+    if (typeof teacher_password != "string") return res.status(400).json({ error: "Password required" })
 
     const room = await db.query("SELECT * FROM rooms WHERE room_id=$1", [room_id])
 
