@@ -13,9 +13,35 @@ router.get("/comments", async (req, res) => {
     for (let i = 0; i < comments.rows.length; i++) {
         const comment = comments.rows[i];
         const user = await db.query("SELECT name, role, profile_icon FROM users WHERE user_id=$1", [comment.user_id])
-        commentData.push({ ...comment, name: user.rows[0].name, role: user.rows[0].role, profile_icon:user.rows[0].profile_icon })
+        commentData.push({ ...comment, name: user.rows[0].name, role: user.rows[0].role, profile_icon: user.rows[0].profile_icon })
     }
     res.json({ comments: commentData })
+})
+
+router.post("/comments", async (req, res) => {
+    const { user_id, resource_id, text, time } = req.body
+
+    if (!(user_id && resource_id && text && time)) return res.status(400).json({ error: "Can't add comment" })
+
+    const query = {
+        name: "insert comment",
+        text: "INSERT INTO comments (user_id, resource_id, text, time) VALUES ($1, $2, $3, $4)",
+        values: [user_id, resource_id, text, time]
+    }
+
+    try {
+        const { rowCount } = await db.query(query)
+
+        if (rowCount)
+            res.json({ user: { user_id } })
+        else
+            res.status(400).json({ error: "Can't add comment" })
+    } catch (e) {
+        res.status(400).json({ error: e.detail })
+    }
+
+
+
 })
 
 module.exports = router
