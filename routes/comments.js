@@ -12,8 +12,8 @@ router.get("/comments", async (req, res) => {
     const commentData = []
     for (let i = 0; i < comments.rows.length; i++) {
         const comment = comments.rows[i];
-        const user = await db.query("SELECT name, role FROM users WHERE user_id=$1", [comment.user_id])
-        commentData.push({ ...comment, name: user.rows[0].name, role: user.rows[0].role })
+        const user = await db.query("SELECT name, role, profile_icon FROM users WHERE user_id=$1", [comment.user_id])
+        commentData.push({ ...comment, name: user.rows[0].name, role: user.rows[0].role, profile_icon:user.rows[0].profile_icon })
     }
     res.json({ comments: commentData })
 })
