@@ -161,7 +161,7 @@ router.get("/my-rooms", async (req, res) => {
     if (!user_id) return res.status(400).json({ error: "Can't get any room" })
 
     const { rows: users } = await db.query("SELECT name FROM users WHERE user_id=$1", [user_id])
-    if (users.length == 0) return res.status(404).jsons({ error: "User not found" })
+    if (users.length == 0) return res.status(404).json({ error: "User not found" })
 
     const { rows: rooms } = await db.query("SELECT room_id, teacher_id, name, subject, private, time AS date_created FROM rooms WHERE teacher_id=$1", [user_id])
 
