@@ -38,7 +38,7 @@ router.get("/followings", async (req, res) => {
 
 router.post("/followings", async (req, res) => {
     const { teacher_id, student_id } = req.body
-    
+
     if (!(teacher_id && student_id)) return res.status(400).json({ error: "Can't follow this user" })
 
     try {
@@ -47,6 +47,23 @@ router.post("/followings", async (req, res) => {
             res.json({ success: "You followed this user" })
         } else {
             res.status(400).json({ error: "Can't follow this user" })
+        }
+    } catch (e) {
+        res.status(400).json({ error: e.detail })
+    }
+})
+
+router.delete("/followings", async (req, res) => {
+    const { teacher_id, student_id } = req.body
+
+    if (!(teacher_id && student_id)) return res.status(400).json({ error: "Can't unfollow this user" })
+
+    try {
+        const { rowCount } = await db.query("DELETE FROM followers WHERE teacher_id=$1 AND student_id=$2", [teacher_id, student_id])
+        if (rowCount) {
+            res.json({ success: "You unfollowed this user" })
+        } else {
+            res.status(400).json({ error: "Can't unfollow this user" })
         }
     } catch (e) {
         res.status(400).json({ error: e.detail })
