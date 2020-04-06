@@ -26,12 +26,25 @@ router.get('/rooms', async (req, res) => {
 })
 
 router.get("/all-rooms", async (req, res) => {
-    const { rows } = await db.query("SELECT room_id, users.user_id AS teacher_id, users.name AS teacher_name, rooms.name, subject, private, time AS date_created FROM rooms INNER JOIN users ON rooms.teacher_id = users.user_id")
+
+    const { text, sort_by, arrange_by, limit } = req.headers
+    if (!(text && sort_by && arrange_by && limit)) return res.status(400).json({ error: "Can't get room" })
+    const query = `SELECT rooms.room_id, users.user_id AS teacher_id, users.name AS teacher_name, rooms.name, rooms.subject, rooms.private, rooms.time AS date_created, COUNT(likes.room_id) AS likes FROM users
+                   INNER JOIN rooms
+                   ON (users.user_id=rooms.teacher_id) and (users.name like '%${text}%' or rooms.name like '%${text}%' or rooms.subject like '%${text}%')
+                   LEFT JOIN likes
+                   ON (rooms.room_id=likes.room_id)
+                   GROUP BY (rooms.room_id, users.user_id, users.name, rooms.name, rooms.subject, rooms.private, rooms.time)
+                   ORDER BY ${(sort_by == 1) ? 'likes' : 'date_created'} ${(arrange_by==1)?'DESC': 'ASC'}
+                   LIMIT ${limit}`
+      
+    const { rows: rooms } = await db.query(query)
+
     const roomData = []
-    for (let i = 0; i < rows.length; i++) {
-        const room = rows[i]
-        const roomResources = await db.query("SELECT resource_id FROM resources WHERE room_id=$1", [room.room_id])
-        roomData.push({ ...room, resource_length: roomResources.rows.length })
+    for (let i = 0; i < rooms.length; i++) {
+        const room = rooms[i]
+        const { rows: resources } = await db.query("SELECT resource_id FROM resources WHERE room_id=$1", [room.room_id])
+        roomData.push({ ...room, resource_length: resources.length })
     }
 
     res.json({ rooms: roomData })
@@ -138,6 +151,28 @@ router.patch("/rooms", async (req, res) => {
         res.json({ room: { room_id } })
     else
         res.status(400).json({ error: "Can't update this room" })
+
+})
+
+
+router.get("/my-rooms", async (req, res) => {
+
+    const { user_id } = req.headers
+    if (!user_id) return res.status(400).json({ error: "Can't get any room" })
+
+    const { rows: users } = await db.query("SELECT name FROM users WHERE user_id=$1", [user_id])
+    if (users.length == 0) return res.status(404).json({ error: "User not found" })
+
+    const { rows: rooms } = await db.query("SELECT room_id, teacher_id, name, subject, private, time AS date_created FROM rooms WHERE teacher_id=$1", [user_id])
+
+    const roomData = []
+    for (let i = 0; i < rooms.length; i++) {
+        const room = rooms[i]
+        const { rows: resources } = await db.query("SELECT resource_id FROM resources WHERE room_id=$1", [room.room_id])
+        roomData.push({ ...room, resource_length: resources.length, teacher_name: users[0].name })
+    }
+
+    res.json({ rooms: roomData })
 
 })
 
