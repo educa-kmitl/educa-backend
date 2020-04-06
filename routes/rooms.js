@@ -28,7 +28,7 @@ router.get('/rooms', async (req, res) => {
 router.get("/all-rooms", async (req, res) => {
 
     const { text, sort_by, arrange_by, limit } = req.headers
-    if (!(text && sort_by && arrange_by && limit)) return res.status(400).json({ error: "Can't get room" })
+    if (!(text && sort_by && arrange_by && limit)) return res.status(400).json({ error: "Can't find any room" })
     const query = `SELECT rooms.room_id, users.user_id AS teacher_id, users.name AS teacher_name, rooms.name, rooms.subject, rooms.private, rooms.time AS date_created, COUNT(likes.room_id) AS likes FROM users
                    INNER JOIN rooms
                    ON (users.user_id=rooms.teacher_id) and (users.name like '%${text}%' or rooms.name like '%${text}%' or rooms.subject like '%${text}%')
@@ -158,7 +158,7 @@ router.patch("/rooms", async (req, res) => {
 router.get("/my-rooms", async (req, res) => {
 
     const { user_id } = req.headers
-    if (!user_id) return res.status(400).json({ error: "Can't get any room" })
+    if (!user_id) return res.status(400).json({ error: "Can't find any room" })
 
     const { rows: users } = await db.query("SELECT name FROM users WHERE user_id=$1", [user_id])
     if (users.length == 0) return res.status(404).json({ error: "User not found" })
