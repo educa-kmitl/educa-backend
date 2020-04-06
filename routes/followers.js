@@ -36,4 +36,21 @@ router.get("/followings", async (req, res) => {
     res.json({ followings: followingsData })
 })
 
+router.post("/followings", async (req, res) => {
+    const { teacher_id, student_id } = req.body
+    
+    if (!(teacher_id && student_id)) return res.status(400).json({ error: "Can't follow this user" })
+
+    try {
+        const { rowCount } = await db.query("INSERT INTO followers (teacher_id, student_id) VALUES ($1, $2)", [teacher_id, student_id])
+        if (rowCount) {
+            res.json({ success: "You followed this user" })
+        } else {
+            res.status(400).json({ error: "Can't follow this user" })
+        }
+    } catch (e) {
+        res.status(400).json({ error: e.detail })
+    }
+})
+
 module.exports = router
