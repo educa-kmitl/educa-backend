@@ -51,19 +51,17 @@ router.patch('/users', async (req, res) => {
 })
 
 router.get('/all-teachers', async (req, res) => {
-    const { rows } = await db.query('SELECT user_id, name, profile_icon FROM users WHERE role=true')
-    const teacherData = []
-    for (let i = 0; i < rows.length; i++) {
-        const teacher_id = rows[i].user_id
-        const rooms = await db.query('SELECT room_id FROM rooms WHERE teacher_id = $1', [teacher_id])
-        let likes = 0
-        if (rooms.rows.length > 0) {
-            const room_ids = rooms.rows.map(room => room.room_id).toString()
-            const allLikes = await db.query(`SElECT * FROM likes WHERE room_id IN (${room_ids})`)
-            likes = allLikes.rows.length
-        }
-        teacherData.push({ ...rows[i], likes })
-    }
+
+    const query = `SELECT users.user_id, users.name, users.profile_icon, role, COUNT(likes.room_id) AS likes FROM users
+                   LEFT JOIN rooms
+                   ON users.user_id=rooms.teacher_id
+                   LEFT JOIN likes
+                   ON rooms.room_id=likes.room_id
+                   GROUP BY (users.user_id, users.name, users.profile_icon, rooms.teacher_id)
+                   ORDER BY likes DESC`
+
+    const { rows } = await db.query(query)
+    const teacherData = rows.filter(user=>user.role).map(user=> delete user.role && user)
     res.json({ teachers: teacherData })
 })
 
