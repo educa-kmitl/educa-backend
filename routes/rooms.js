@@ -141,4 +141,26 @@ router.patch("/rooms", async (req, res) => {
 
 })
 
+
+router.get("/my-rooms", async (req, res) => {
+
+    const { user_id } = req.headers
+    if (!user_id) return res.status(400).json({ error: "Can't get any room" })
+
+    const { rows: users } = await db.query("SELECT name FROM users WHERE user_id=$1", [user_id])
+    if (users.length == 0) return res.status(404).json({ error: "User not found" })
+
+    const { rows: rooms } = await db.query("SELECT room_id, teacher_id, name, subject, private, time AS date_created FROM rooms WHERE teacher_id=$1", [user_id])
+
+    const roomData = []
+    for (let i = 0; i < rooms.length; i++) {
+        const room = rooms[i]
+        const { rows: resources } = await db.query("SELECT resource_id FROM resources WHERE room_id=$1", [room.room_id])
+        roomData.push({ ...room, resource_length: resources.length, teacher_name:users[0].name })
+    }
+
+    res.json({ roomData })
+
+})
+
 module.exports = router
