@@ -172,7 +172,7 @@ router.get("/my-rooms", async (req, res) => {
         roomData.push({ ...room, resource_length: resources.length, teacher_name: users[0].name })
     }
 
-    res.json({ roomData })
+    res.json({ rooms: roomData })
 
 })
 
