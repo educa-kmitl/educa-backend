@@ -51,6 +51,8 @@ router.patch('/users', async (req, res) => {
 })
 
 router.get('/all-teachers', async (req, res) => {
+    const { limit } = req.headers
+    if (!limit) return res.status(400).json({ error: "Can't find teacher" })
 
     const query = `SELECT users.user_id, users.name, users.profile_icon, role, COUNT(likes.room_id) AS likes FROM users
                    LEFT JOIN rooms
@@ -58,10 +60,11 @@ router.get('/all-teachers', async (req, res) => {
                    LEFT JOIN likes
                    ON rooms.room_id=likes.room_id
                    GROUP BY (users.user_id, users.name, users.profile_icon, rooms.teacher_id)
-                   ORDER BY likes DESC`
+                   ORDER BY likes DESC
+                   LIMIT ${limit}`
 
     const { rows } = await db.query(query)
-    const teacherData = rows.filter(user=>user.role).map(user=> delete user.role && user)
+    const teacherData = rows.filter(user => user.role).map(user => delete user.role && user)
     res.json({ teachers: teacherData })
 })
 
