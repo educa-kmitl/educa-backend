@@ -61,11 +61,13 @@ router.get('/all-teachers', async (req, res) => {
                    ON rooms.room_id=likes.room_id
                    GROUP BY (users.user_id, users.name, users.profile_icon, rooms.teacher_id)
                    ORDER BY likes DESC
-                   LIMIT ${limit}`
+                   `
 
     const { rows } = await db.query(query)
-    const teacherData = rows.filter(user => user.role).map(user => delete user.role && user)
-    res.json({ teachers: teacherData })
+    let teacherData = rows.filter(user => user.role).map(user => delete user.role && user)
+    const length = teacherData.length
+
+    res.json({ teachers: teacherData.slice(0, (limit > length) ? length : limit) })
 })
 
 
