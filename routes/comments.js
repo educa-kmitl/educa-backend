@@ -4,10 +4,10 @@ const db = require('../db')
 const router = new Router()
 
 router.get("/comments", async (req, res) => {
-    const { resource_id } = req.headers
-    if (!resource_id) return res.status(400).json({ error: "Can't get comment" })
+    const { resource_id, limit } = req.headers
+    if (!(resource_id && limit)) return res.status(400).json({ error: "Can't get comment" })
 
-    const comments = await db.query("SELECT text, time, user_id FROM comments WHERE resource_id=$1 ORDER BY time", [resource_id])
+    const comments = await db.query("SELECT text, time, user_id FROM comments WHERE resource_id=$1 ORDER BY time LIMIT $2", [resource_id, limit])
 
     const commentData = []
     for (let i = 0; i < comments.rows.length; i++) {
