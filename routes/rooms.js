@@ -6,10 +6,10 @@ const router = new Router()
 
 router.get('/rooms', async (req, res) => {
     const { room_id, password } = req.headers
-    if (!room_id) return res.json({ error: 'Room not found' })
+    if (!room_id) return res.status(400).json({ error: "Can't get room data" })
 
     const rooms = await db.query('SELECT name, subject, private, password, time, teacher_id FROM rooms WHERE room_id=$1', [room_id])
-    if (rooms.rows.length == 0) return res.json({ error: 'Room not found' })
+    if (rooms.rows.length == 0) return res.status(400).json({ error: 'Room not found' })
 
     if (rooms.rows[0].private && (rooms.rows[0].password != password)) return res.status(400).json({ error: "Invalid password" })
 
