@@ -4,11 +4,11 @@ const db = require('../db')
 const router = new Router()
 
 router.get("/likes", async (req, res) => {
-    const { room_id } = req.headers
-    if (!room_id) return res.status(400).json({ error: "Can't get likes data" })
+    const { room_id, user_id } = req.headers
+    if (!(room_id, user_id)) return res.status(400).json({ error: "Can't get likes data" })
 
-    const { rows } = await db.query("SELECT user_id FROM likes WHERE room_id=$1", [room_id])
-    res.json({ likes: rows })
+    const { rows } = await db.query("SELECT user_id FROM likes WHERE room_id=$1 AND user_id=$2", [room_id, user_id])
+    res.json({ liked: rows.length > 0 })
 })
 
 router.post("/likes", async (req, res) => {
@@ -37,7 +37,7 @@ router.delete("/likes", async (req, res) => {
     try {
 
         const { rowCount } = await db.query("DELETE FROM likes WHERE room_id=$1 AND user_id=$2", [room_id, user_id])
-        
+
         if (rowCount) {
             res.json({ success: "You unliked this room" })
         } else {
