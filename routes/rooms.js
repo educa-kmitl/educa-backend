@@ -17,10 +17,13 @@ router.get('/rooms', async (req, res) => {
 
     const resources = await db.query('SELECT resource_id, topic, video_url, file_url from resources WHERE room_id=$1', [room_id])
 
+    const likes = await db.query('SELECT user_id FROM likes WHERE room_id=$1', [room_id])
+
     const roomData = {
         ...rooms.rows[0],
         teacher_name: teacher.rows[0].name,
-        resources: resources.rows
+        resources: resources.rows,
+        likes: likes.rows
     }
     res.json({ room: roomData })
 })
