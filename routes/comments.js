@@ -5,16 +5,24 @@ const router = new Router()
 
 router.get("/comments", async (req, res) => {
     const { resource_id, limit } = req.headers
+    if (!resource_id) return res.status(400).json({ error: "Can't get comment" })
 
-    const comments = await db.query("SELECT text, time, user_id FROM comments WHERE resource_id=$1 ORDER BY time DESC LIMIT $2", [resource_id, limit ? limit : 10])
-
-    const commentData = []
-    for (let i = 0; i < comments.rows.length; i++) {
-        const comment = comments.rows[i];
-        const user = await db.query("SELECT name, role, profile_icon FROM users WHERE user_id=$1", [comment.user_id])
-        commentData.unshift({ ...comment, name: user.rows[0].name, role: user.rows[0].role, profile_icon: user.rows[0].profile_icon })
+    try {
+        const limitQuery = limit ? limit : 10
+        const query = `SELECT users.user_id, users.name, users.role, users.profile_icon, comments.text, comments.time
+                   FROM comments 
+                   INNER JOIN users
+                   ON (users.user_id=comments.user_id) AND (comments.resource_id=${resource_id})
+                   ORDER BY time DESC
+                   LIMIT ${limitQuery + 1}`
+        const { rows: comments } = await db.query(query)
+        const have_more = comments.length > limitQuery
+        const commentData = have_more ? comments.slice(0, -1).reverse() : comments.reverse()
+        res.json({ comments: commentData, have_more })
+    } catch (e) {
+        res.status(400).json({ error: e.name })
     }
-    res.json({ comments: commentData })
+
 })
 
 router.post("/comments", async (req, res) => {
