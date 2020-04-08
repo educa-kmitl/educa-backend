@@ -161,13 +161,22 @@ router.patch("/rooms", async (req, res) => {
 
 router.get("/my-rooms", async (req, res) => {
 
-    const { user_id } = req.headers
+    const { user_id, limit } = req.headers
     if (!user_id) return res.status(400).json({ error: "Can't find any room" })
 
     const { rows: users } = await db.query("SELECT name FROM users WHERE user_id=$1", [user_id])
     if (users.length == 0) return res.status(404).json({ error: "User not found" })
 
-    const { rows: rooms } = await db.query("SELECT room_id, teacher_id, name, subject, private, time AS date_created FROM rooms WHERE teacher_id=$1", [user_id])
+    const limitQuery = limit ? Number.parseInt(limit) : 6
+    const roomQuery = `SELECT room_id, teacher_id, name, subject, private, time AS date_created
+                       FROM rooms 
+                       WHERE teacher_id=${user_id} 
+                       ORDER BY time DESC
+                       LIMIT ${limitQuery + 1}`
+    const { rows: rooms } = await db.query(roomQuery)
+
+    const have_more = rooms.length > limitQuery
+    if (have_more) rooms.pop()
 
     const roomData = []
     for (let i = 0; i < rooms.length; i++) {
@@ -178,7 +187,7 @@ router.get("/my-rooms", async (req, res) => {
         roomData.push({ ...room, resource_length: resources.length, teacher_name: users[0].name, likes: likes.length })
     }
 
-    res.json({ rooms: roomData })
+    res.json({ rooms: roomData, have_more })
 
 })
 
