@@ -28,35 +28,6 @@ router.get('/rooms', async (req, res) => {
     res.json({ room: roomData })
 })
 
-router.get("/all-rooms", async (req, res) => {
-
-    const { text, sort_by, arrange_by, limit } = req.headers
-    const queryStr = text ? text : ''
-
-    const limitQuery = limit ? Number.parseInt(limit) : 6
-    const query = `SELECT rooms.room_id, users.user_id AS teacher_id, users.name AS teacher_name, rooms.name, rooms.subject, rooms.private, rooms.time AS date_created, COUNT(likes.room_id) AS likes FROM users
-                   INNER JOIN rooms
-                   ON (users.user_id=rooms.teacher_id) and (users.name like '%${queryStr}%' or rooms.name like '%${queryStr}%' or rooms.subject like '%${queryStr}%')
-                   LEFT JOIN likes
-                   ON (rooms.room_id=likes.room_id)
-                   GROUP BY (rooms.room_id, users.user_id, users.name, rooms.name, rooms.subject, rooms.private, rooms.time)
-                   ORDER BY ${(sort_by == 2) ? 'date_created' : 'likes'} ${(arrange_by == 2) ? 'ASC' : 'DESC'}
-                   LIMIT ${limitQuery + 1}`
-    const { rows: rooms } = await db.query(query)
-
-    const have_more = rooms.length>limitQuery
-    if(have_more) rooms.pop()
-
-    const roomData = []
-    for (let i = 0; i < rooms.length; i++) {
-        const room = rooms[i]
-        const { rows: resources } = await db.query("SELECT resource_id FROM resources WHERE room_id=$1", [room.room_id])
-        roomData.push({ ...room, resource_length: resources.length })
-    }
-
-    res.json({ rooms: roomData, have_more })
-})
-
 router.post("/rooms", async (req, res) => {
     const { name, subject, private, password, resources, teacher_id, date_created } = req.body
 
@@ -192,6 +163,67 @@ router.get("/my-rooms", async (req, res) => {
 
     res.json({ rooms: roomData, have_more })
 
+})
+
+router.get("/all-rooms", async (req, res) => {
+
+    const { text, sort_by, arrange_by, limit } = req.headers
+    const queryStr = text ? text : ''
+
+    const limitQuery = limit ? Number.parseInt(limit) : 6
+    const query = `SELECT rooms.room_id, users.user_id AS teacher_id, users.name AS teacher_name, rooms.name, rooms.subject, rooms.private, rooms.time AS date_created, COUNT(likes.room_id) AS likes FROM users
+                   INNER JOIN rooms
+                   ON (users.user_id=rooms.teacher_id) and (users.name like '%${queryStr}%' or rooms.name like '%${queryStr}%' or rooms.subject like '%${queryStr}%')
+                   LEFT JOIN likes
+                   ON (rooms.room_id=likes.room_id)
+                   GROUP BY (rooms.room_id, users.user_id, users.name, rooms.name, rooms.subject, rooms.private, rooms.time)
+                   ORDER BY ${(sort_by == 2) ? 'date_created' : 'likes'} ${(arrange_by == 2) ? 'ASC' : 'DESC'}
+                   LIMIT ${limitQuery + 1}`
+    const { rows: rooms } = await db.query(query)
+
+    const have_more = rooms.length > limitQuery
+    if (have_more) rooms.pop()
+
+    const roomData = []
+    for (let i = 0; i < rooms.length; i++) {
+        const room = rooms[i]
+        const { rows: resources } = await db.query("SELECT resource_id FROM resources WHERE room_id=$1", [room.room_id])
+        roomData.push({ ...room, resource_length: resources.length })
+    }
+
+    res.json({ rooms: roomData, have_more })
+})
+
+router.get("/following-rooms", async (req, res) => {
+    const { user_id, limit } = req.headers
+    if (!user_id) res.status(400).json({ error: "Can't get your following rooms" })
+
+    const limitQuery = limit ? Number.parseInt(limit) : 6
+    const roomQuery = `SELECT R.room_id, T.teacher_id, U.name AS teacher_name, 
+                          R.name, R.subject, R.private, R.time AS date_created,
+                          COUNT(L.user_id) AS likes
+                       FROM (SELECT teacher_id FROM followers WHERE student_id=${user_id}) AS T
+                       INNER JOIN rooms R
+                       ON R.teacher_id = T.teacher_id
+                       INNER JOIN users U
+                       ON T.teacher_id = U.user_id
+                       LEFT JOIN likes L
+                       ON L.room_id = R.room_id
+                       GROUP BY (R.room_id, T.teacher_id, U.name, R.name, R.subject, R.private)
+                       ORDER BY likes DESC
+                       LIMIT ${limitQuery + 1}`
+    const { rows: rooms } = await db.query(roomQuery)
+    const have_more = rooms.length > limitQuery
+    if (have_more) rooms.pop()
+
+    const roomData = []
+    for (let i = 0; i < rooms.length; i++) {
+        const { room_id } = rooms[i]
+        const { rows: resources } = await db.query("SELECT room_id FROM resources WHERE room_id=$1", [room_id])
+        roomData.push([{ ...rooms[i], resource_length: resources.length }])
+    }
+
+    res.json({ rooms: roomData, have_more })
 })
 
 module.exports = router
