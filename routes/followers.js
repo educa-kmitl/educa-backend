@@ -24,16 +24,12 @@ router.get("/followings", async (req, res) => {
     const { user_id } = req.headers
     if (!user_id) return res.status(400).json({ error: "Can't get follower data" })
 
-    const followings = await db.query("SELECT teacher_id FROM followers WHERE student_id=$1", [user_id])
+    const query = `SELECT followers.teacher_id, users.name, users.profile_icon FROM followers
+                   INNER JOIN users
+                   ON (followers.teacher_id = users.user_id) AND (followers.student_id=${user_id})`
+    const { rows: followings } = await db.query(query)
 
-    const followingsData = []
-    for (let i = 0; i < followings.rows.length; i++) {
-        const follower = followings.rows[i]
-        const user = await db.query("SELECT name FROM users WHERE user_id=$1", [follower.teacher_id])
-        followingsData.push({ ...follower, ...user.rows[0] })
-    }
-
-    res.json({ followings: followingsData })
+    res.json({ followings })
 })
 
 router.post("/followings", async (req, res) => {
