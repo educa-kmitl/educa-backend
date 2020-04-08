@@ -33,6 +33,7 @@ router.get("/all-rooms", async (req, res) => {
     const { text, sort_by, arrange_by, limit } = req.headers
     const queryStr = text ? text : ''
 
+    const limitQuery = limit ? Number.parseInt(limit) : 6
     const query = `SELECT rooms.room_id, users.user_id AS teacher_id, users.name AS teacher_name, rooms.name, rooms.subject, rooms.private, rooms.time AS date_created, COUNT(likes.room_id) AS likes FROM users
                    INNER JOIN rooms
                    ON (users.user_id=rooms.teacher_id) and (users.name like '%${queryStr}%' or rooms.name like '%${queryStr}%' or rooms.subject like '%${queryStr}%')
@@ -40,9 +41,11 @@ router.get("/all-rooms", async (req, res) => {
                    ON (rooms.room_id=likes.room_id)
                    GROUP BY (rooms.room_id, users.user_id, users.name, rooms.name, rooms.subject, rooms.private, rooms.time)
                    ORDER BY ${(sort_by == 2) ? 'date_created' : 'likes'} ${(arrange_by == 2) ? 'ASC' : 'DESC'}
-                   LIMIT ${limit ? limit : 6}`
-
+                   LIMIT ${limitQuery + 1}`
     const { rows: rooms } = await db.query(query)
+
+    const have_more = rooms.length>limitQuery
+    if(have_more) rooms.pop()
 
     const roomData = []
     for (let i = 0; i < rooms.length; i++) {
@@ -51,7 +54,7 @@ router.get("/all-rooms", async (req, res) => {
         roomData.push({ ...room, resource_length: resources.length })
     }
 
-    res.json({ rooms: roomData })
+    res.json({ rooms: roomData, have_more })
 })
 
 router.post("/rooms", async (req, res) => {
