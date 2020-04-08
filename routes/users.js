@@ -54,22 +54,26 @@ router.patch('/users', async (req, res) => {
 
 router.get('/all-teachers', async (req, res) => {
     const { limit } = req.headers
-    if (!limit) return res.status(400).json({ error: "Can't find teacher" })
 
-    const query = `SELECT users.user_id, users.name, users.profile_icon, role, COUNT(likes.room_id) AS likes FROM users
-                   LEFT JOIN rooms
-                   ON users.user_id=rooms.teacher_id
-                   LEFT JOIN likes
-                   ON rooms.room_id=likes.room_id
-                   GROUP BY (users.user_id, users.name, users.profile_icon, rooms.teacher_id)
-                   ORDER BY likes DESC
+    const limitQuery = limit ? Number.parseInt(limit) : 20
+
+    const query = ` SELECT teachers.user_id, teachers.name, teachers.profile_icon, COUNT(likes.user_id) AS likes
+                    FROM ( SELECT users.user_id, users.name, users.profile_icon 
+                           FROM users 
+                           WHERE role=true) AS teachers
+                    LEFT JOIN rooms
+                    ON rooms.teacher_id = teachers.user_id
+                    LEFT JOIN likes
+                    ON likes.room_id = rooms.room_id
+                    GROUP BY (teachers.user_id, teachers.name, teachers.profile_icon, rooms.teacher_id)
+                    ORDER BY likes DESC
+                    LIMIT ${limitQuery + 1}
                    `
 
-    const { rows } = await db.query(query)
-    let teacherData = rows.filter(user => user.role).map(user => delete user.role && user)
-    const length = teacherData.length
-
-    res.json({ teachers: teacherData.slice(0, (limit > length) ? length : limit) })
+    const { rows: teachers } = await db.query(query)
+    const have_more = teachers.length > limitQuery
+    if (have_more) teachers.pop()
+    res.json({ teachers, have_more })
 })
 
 
