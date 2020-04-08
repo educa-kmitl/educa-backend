@@ -13,12 +13,14 @@ router.get('/users', async (req, res) => {
 
     let likes = 0
     if (user.rows[0].role) {
-        const rooms = await db.query('SELECT room_id FROM rooms WHERE teacher_id = $1', [user_id])
-        if (rooms.rows.length > 0) {
-            const room_ids = rooms.rows.map(room => room.room_id).toString()
-            const allLikes = await db.query(`SElECT * FROM likes WHERE room_id IN (${room_ids})`)
-            likes = allLikes.rows.length
-        }
+        const query = `SELECT COUNT(likes.user_id) AS likes FROM users 
+                       INNER JOIN rooms
+                       ON users.user_id=${user_id} AND rooms.teacher_id=${user_id}
+                       LEFT JOIN likes
+                       ON rooms.room_id=likes.room_id
+                       GROUP BY (users.user_id, users.name, users.profile_icon, users.role)`
+        const { rows: likesArr } = await db.query(query)
+        likes = (likesArr.length > 0) ? likesArr[0].likes : 0
     }
     res.json({ user: { ...user.rows[0], likes } })
 
