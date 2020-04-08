@@ -8,7 +8,7 @@ router.get("/comments", async (req, res) => {
     if (!resource_id) return res.status(400).json({ error: "Can't get comment" })
 
     try {
-        const limitQuery = limit ? limit : 10
+        const limitQuery = limit ? Number.parseInt(limit) : 10
         const query = `SELECT users.user_id, users.name, users.role, users.profile_icon, comments.text, comments.time
                    FROM comments 
                    INNER JOIN users
