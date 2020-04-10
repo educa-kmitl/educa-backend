@@ -8,11 +8,11 @@ router.get('/users', async (req, res) => {
     const { user_id } = req.headers
     if (!user_id) return res.status(404).json({ error: 'User not found' })
 
-    const user = await db.query('SELECT user_id, name, profile_icon, role FROM users WHERE user_id = $1', [user_id])
-    if (user.rows.length == 0) return res.status(404).json({ error: 'User not found' })
+    const { rows: users } = await db.query('SELECT user_id, name, profile_icon, role FROM users WHERE user_id = $1', [user_id])
+    if (users.length == 0) return res.status(404).json({ error: 'User not found' })
 
     let likes = 0
-    if (user.rows[0].role) {
+    if (users[0].role) {
         const query = `SELECT COUNT(likes.user_id) AS likes FROM users 
                        INNER JOIN rooms
                        ON users.user_id=${user_id} AND rooms.teacher_id=${user_id}
@@ -22,28 +22,27 @@ router.get('/users', async (req, res) => {
         const { rows: likesArr } = await db.query(query)
         likes = (likesArr.length > 0) ? likesArr[0].likes : 0
     }
-    res.json({ user: { ...user.rows[0], likes } })
+    res.json({ user: { ...users[0], likes } })
 
 })
 
 router.patch('/users', async (req, res) => {
     const { user_id, password, name, profile_icon } = req.body
     if (!(user_id && password)) return res.status(400).json({ error: "Can't update user" })
-    if (typeof password != "string") return res.status(400).json({ error: "Password required" })
+    if (typeof password != "string") return res.status(400).json({ error: "Invalid password" })
 
-    const { rows } = await db.query("SELECT user_id, name, profile_icon, password FROM users WHERE user_id=$1", [user_id])
-    if (rows.length == 0) return res.status(404).json({ error: "User not found" })
+    const { rows:users } = await db.query("SELECT user_id, name, profile_icon, password FROM users WHERE user_id=$1", [user_id])
+    if (users.length == 0) return res.status(404).json({ error: "User not found" })
 
-    const validPass = await bcrypt.compare(password, rows[0].password)
+    const validPass = await bcrypt.compare(password, users[0].password)
     if (!validPass) return res.status(400).json({ error: "Invalid password" })
 
-    const { name: default_name, profile_icon: default_profile_icon } = rows[0]
+    const { name: default_name, profile_icon: default_profile_icon } = users[0]
     const query = {
         name: "update user",
         text: "UPDATE users SET name=$1, profile_icon=$2 WHERE user_id=$3",
         values: [name ? name : default_name, profile_icon ? profile_icon : default_profile_icon, user_id]
     }
-
     const { rowCount } = await db.query(query)
     if (rowCount)
         res.json({ user: { user_id } })

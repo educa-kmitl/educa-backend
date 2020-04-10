@@ -10,11 +10,11 @@ router.get("/comments", async (req, res) => {
     try {
         const limitQuery = limit ? Number.parseInt(limit) : 10
         const query = `SELECT users.user_id, users.name, users.role, users.profile_icon, comments.text, comments.time
-                   FROM comments 
-                   INNER JOIN users
-                   ON (users.user_id=comments.user_id) AND (comments.resource_id=${resource_id})
-                   ORDER BY time DESC
-                   LIMIT ${limitQuery + 1}`
+                       FROM comments 
+                       INNER JOIN users
+                       ON (users.user_id=comments.user_id) AND (comments.resource_id=${resource_id})
+                       ORDER BY time DESC
+                       LIMIT ${limitQuery + 1}`
         const { rows: comments } = await db.query(query)
         const have_more = comments.length > limitQuery
         const commentData = have_more ? comments.slice(0, -1).reverse() : comments.reverse()

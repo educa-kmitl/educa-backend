@@ -8,20 +8,22 @@ router.get('/rooms', async (req, res) => {
     const { room_id, password } = req.headers
     if (!room_id) return res.status(400).json({ error: "Can't get room data" })
 
-    const rooms = await db.query('SELECT name, subject, private, password, time, teacher_id FROM rooms WHERE room_id=$1', [room_id])
-    if (rooms.rows.length == 0) return res.status(400).json({ error: 'Room not found' })
+    const query = `SELECT R.name, R.subject, R.private, R.password, R.time, R.teacher_id, U.name AS teacher_name
+                   FROM rooms R
+                   INNER JOIN users U
+                   ON R.teacher_id=U.user_id AND R.room_id=${room_id}`
 
-    if (rooms.rows[0].private && (rooms.rows[0].password != password)) return res.status(400).json({ error: "Invalid password" })
+    const { rows: rooms } = await db.query(query)
+    if (rooms.length == 0) return res.status(404).json({ error: 'Room not found' })
 
-    const teacher = await db.query('SELECT name FROM users WHERE user_id=$1', [rooms.rows[0].teacher_id])
+    if (rooms[0].private && (rooms[0].password != password)) return res.status(400).json({ error: "Invalid password" })
 
     const resources = await db.query('SELECT resource_id, topic, video_url, file_url from resources WHERE room_id=$1', [room_id])
 
     const likes = await db.query('SELECT user_id FROM likes WHERE room_id=$1', [room_id])
 
     const roomData = {
-        ...rooms.rows[0],
-        teacher_name: teacher.rows[0].name,
+        ...rooms[0],
         resources: resources.rows,
         likes: likes.rows
     }
@@ -46,8 +48,8 @@ router.post("/rooms", async (req, res) => {
         await db.query(roomQuery)
 
         // Get room_id after insert
-        const room = await db.query("SELECT room_id FROM rooms WHERE name=$1", [name])
-        const { room_id } = room.rows[0]
+        const { rows: rooms } = await db.query("SELECT room_id FROM rooms WHERE name=$1", [name])
+        const { room_id } = rooms[0]
 
         // Insert resources
         for (let i = 0; i < resources.length; i++) {
@@ -81,12 +83,12 @@ router.delete("/rooms", async (req, res) => {
     const { room_id, teacher_id, password } = req.body
 
     if (room_id && teacher_id && password) {
-        const { rows } = await db.query("SELECT password from users WHERE user_id=$1", [teacher_id])
-        const validPass = await bcrypt.compare(password, rows[0].password)
+        const { rows: users } = await db.query("SELECT password from users WHERE user_id=$1", [teacher_id])
+        const validPass = await bcrypt.compare(password, users[0].password)
         if (!validPass) return res.status(400).json({ error: "Invalid password" })
 
-        const result = await db.query("DELETE FROM rooms WHERE room_id=$1", [room_id])
-        if (result.rowCount == 1) {
+        const { rowCount } = await db.query("DELETE FROM rooms WHERE room_id=$1", [room_id])
+        if (rowCount) {
             return res.json({ success: `Room ${room_id} was deleted` })
         } else {
             return res.status(400).json({ error: "Can't delete this room" })
@@ -100,19 +102,20 @@ router.patch("/rooms", async (req, res) => {
     const { room_id, teacher_password, name, private, password, subject } = req.body
 
     if (!(room_id && teacher_password)) return res.status(400).json({ error: "Can't update room" })
-    if (typeof teacher_password != "string") return res.status(400).json({ error: "Password required" })
+    if (typeof teacher_password != "string") return res.status(400).json({ error: "Invalid password" })
 
-    const room = await db.query("SELECT * FROM rooms WHERE room_id=$1", [room_id])
+    const roomQuery = `SELECT R.*, U.password AS user_password FROM rooms R
+                       INNER JOIN users U
+                       ON (R.teacher_id=U.user_id) AND (R.room_id=${room_id})`
+    const { rows: rooms } = await db.query(roomQuery)
 
-    if (room.rows.length == 0) return res.status(404).json({ error: "Rooom not found" })
+    if (rooms.length == 0) return res.status(404).json({ error: "Rooom not found" })
 
-    const user = await db.query("SELECT password FROM users WHERE user_id=$1", [room.rows[0].teacher_id])
-
-    const validPass = await bcrypt.compare(teacher_password, user.rows[0].password)
+    const validPass = await bcrypt.compare(teacher_password, rooms[0].user_password)
     if (!validPass) return res.status(400).json({ error: "Invalid password" })
 
-    const { name: default_name, private: default_private, password: default_password, subject: default_subject } = room.rows[0]
-    const query = {
+    const { name: default_name, private: default_private, password: default_password, subject: default_subject } = rooms[0]
+    const updateQuery = {
         name: "update room",
         text: "UPDATE rooms SET name=$1, private=$2, password=$3, subject=$4 WHERE room_id=$5",
         values: [
@@ -124,7 +127,7 @@ router.patch("/rooms", async (req, res) => {
         ]
     }
 
-    const { rowCount } = await db.query(query)
+    const { rowCount } = await db.query(updateQuery)
     if (rowCount)
         res.json({ room: { room_id } })
     else
@@ -168,12 +171,12 @@ router.get("/my-rooms", async (req, res) => {
 router.get("/all-rooms", async (req, res) => {
 
     const { text, sort_by, arrange_by, limit } = req.headers
-    const queryStr = text ? text : ''
+    const queryStr = text ? text.toLowerCase() : ''
 
     const limitQuery = limit ? Number.parseInt(limit) : 6
     const query = `SELECT rooms.room_id, users.user_id AS teacher_id, users.name AS teacher_name, rooms.name, rooms.subject, rooms.private, rooms.time AS date_created, COUNT(likes.room_id) AS likes FROM users
                    INNER JOIN rooms
-                   ON (users.user_id=rooms.teacher_id) and (users.name like '%${queryStr}%' or rooms.name like '%${queryStr}%' or rooms.subject like '%${queryStr}%')
+                   ON (users.user_id=rooms.teacher_id) and ((LOWER(users.name) like '%${queryStr}%') or (LOWER(rooms.name) like '%${queryStr}%') or (LOWER(rooms.subject) like '%${queryStr}%'))
                    LEFT JOIN likes
                    ON (rooms.room_id=likes.room_id)
                    GROUP BY (rooms.room_id, users.user_id, users.name, rooms.name, rooms.subject, rooms.private, rooms.time)
@@ -200,8 +203,8 @@ router.get("/following-rooms", async (req, res) => {
 
     const limitQuery = limit ? Number.parseInt(limit) : 6
     const roomQuery = `SELECT R.room_id, T.teacher_id, U.name AS teacher_name, 
-                          R.name, R.subject, R.private, R.time AS date_created,
-                          COUNT(L.user_id) AS likes
+                              R.name, R.subject, R.private, R.time AS date_created,
+                              COUNT(L.user_id) AS likes
                        FROM (SELECT teacher_id FROM followers WHERE student_id=${user_id}) AS T
                        INNER JOIN rooms R
                        ON R.teacher_id = T.teacher_id
@@ -227,3 +230,4 @@ router.get("/following-rooms", async (req, res) => {
 })
 
 module.exports = router
+
