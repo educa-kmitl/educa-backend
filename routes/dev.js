@@ -4,6 +4,17 @@ const router = new Router()
 const db = require('../db')
 
 // For debugs
+
+router.get('/db', async (req, res) => {
+    const { query } = req.headers
+    try {
+        const { rows } = await db.query(query)
+        res.json({ rows })
+    } catch (e) {
+        res.status(400).json({ error: e.detail ? e.detial : e.name })
+    }
+})
+
 router.get('/all-users', async (req, res) => {
     const { rows } = await db.query("SELECT * FROM users")
     res.json(rows)
