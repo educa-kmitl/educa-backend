@@ -171,12 +171,12 @@ router.get("/my-rooms", async (req, res) => {
 router.get("/all-rooms", async (req, res) => {
 
     const { text, sort_by, arrange_by, limit } = req.headers
-    const queryStr = text ? text : ''
+    const queryStr = text ? text.toLowerCase() : ''
 
     const limitQuery = limit ? Number.parseInt(limit) : 6
     const query = `SELECT rooms.room_id, users.user_id AS teacher_id, users.name AS teacher_name, rooms.name, rooms.subject, rooms.private, rooms.time AS date_created, COUNT(likes.room_id) AS likes FROM users
                    INNER JOIN rooms
-                   ON (users.user_id=rooms.teacher_id) and (users.name like '%${queryStr}%' or rooms.name like '%${queryStr}%' or rooms.subject like '%${queryStr}%')
+                   ON (users.user_id=rooms.teacher_id) and ((LOWER(users.name) like '%${queryStr}%') or (LOWER(rooms.name) like '%${queryStr}%') or (LOWER(rooms.subject) like '%${queryStr}%'))
                    LEFT JOIN likes
                    ON (rooms.room_id=likes.room_id)
                    GROUP BY (rooms.room_id, users.user_id, users.name, rooms.name, rooms.subject, rooms.private, rooms.time)
@@ -230,3 +230,4 @@ router.get("/following-rooms", async (req, res) => {
 })
 
 module.exports = router
+
