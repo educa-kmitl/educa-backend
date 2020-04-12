@@ -223,7 +223,7 @@ router.get("/following-rooms", async (req, res) => {
     for (let i = 0; i < rooms.length; i++) {
         const { room_id } = rooms[i]
         const { rows: resources } = await db.query("SELECT room_id FROM resources WHERE room_id=$1", [room_id])
-        roomData.push([{ ...rooms[i], resource_length: resources.length }])
+        roomData.push({ ...rooms[i], resource_length: resources.length })
     }
 
     res.json({ rooms: roomData, have_more })
