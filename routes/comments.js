@@ -20,7 +20,7 @@ router.get("/comments", async (req, res) => {
         const commentData = have_more ? comments.slice(0, -1).reverse() : comments.reverse()
         res.json({ comments: commentData, have_more })
     } catch (e) {
-        res.status(400).json({ error: e.name })
+        res.status(400).json({ error: e.detail ? e.detail : e.name })
     }
 
 })
@@ -44,7 +44,7 @@ router.post("/comments", async (req, res) => {
         else
             res.status(400).json({ error: "Can't add comment" })
     } catch (e) {
-        res.status(400).json({ error: e.detail })
+        res.status(400).json({ error: e.detail ? e.detail : e.name })
     }
 
 

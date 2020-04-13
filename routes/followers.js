@@ -59,7 +59,7 @@ router.delete("/followings", async (req, res) => {
             res.status(400).json({ error: "Can't unfollow this user" })
         }
     } catch (e) {
-        res.status(400).json({ error: e.detail })
+        res.status(400).json({ error: e.detail ? e.detail : e.name })
     }
 })
 
