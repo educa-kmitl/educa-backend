@@ -44,7 +44,7 @@ router.delete("/likes", async (req, res) => {
             res.status(400).json({ error: "Can't unlike this room" })
         }
     } catch (e) {
-        res.status(400).json({ error: e.detail })
+        res.status(400).json({ error: e.detail ? e.detail : e.name })
     }
 })
 
