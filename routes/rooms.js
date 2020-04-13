@@ -39,7 +39,6 @@ router.post("/rooms", async (req, res) => {
         const { rows } = await db.query("SELECT name FROM rooms WHERE name=$1", [name])
         if (rows.length > 0) return res.status(400).json({ error: `Name "${name}" is already used` })
 
-        // Insert room
         const roomQuery = {
             name: 'insert-room',
             text: 'INSERT INTO rooms (name, subject, private, password, teacher_id, time) VALUES ($1, $2, $3, $4, $5, $6)',
@@ -47,11 +46,9 @@ router.post("/rooms", async (req, res) => {
         }
         await db.query(roomQuery)
 
-        // Get room_id after insert
         const { rows: rooms } = await db.query("SELECT room_id FROM rooms WHERE name=$1", [name])
         const { room_id } = rooms[0]
 
-        // Insert resources
         for (let i = 0; i < resources.length; i++) {
             const { topic, video_url, file_url } = resources[i]
             const resourceQuery = {
@@ -156,11 +153,10 @@ router.get("/my-rooms", async (req, res) => {
     if (have_more) rooms.pop()
 
     const roomData = []
-    for (let i = 0; i < rooms.length; i++) {
-        const room = rooms[i]
-        const { rows: resources } = await db.query("SELECT resource_id FROM resources WHERE room_id=$1", [room.room_id])
-
-        const { rows: likes } = await db.query("SELECT user_id FROM likes WHERE room_Id=$1", [room.room_id])
+    for (let room of rooms) {
+        const { room_id } = room
+        const { rows: resources } = await db.query("SELECT resource_id FROM resources WHERE room_id=$1", [room_id])
+        const { rows: likes } = await db.query("SELECT user_id FROM likes WHERE room_Id=$1", [room_id])
         roomData.push({ ...room, resource_length: resources.length, teacher_name: users[0].name, likes: likes.length })
     }
 
@@ -188,9 +184,9 @@ router.get("/all-rooms", async (req, res) => {
     if (have_more) rooms.pop()
 
     const roomData = []
-    for (let i = 0; i < rooms.length; i++) {
-        const room = rooms[i]
-        const { rows: resources } = await db.query("SELECT resource_id FROM resources WHERE room_id=$1", [room.room_id])
+    for (let room of rooms) {
+        const { room_id } = room
+        const { rows: resources } = await db.query("SELECT resource_id FROM resources WHERE room_id=$1", [room_id])
         roomData.push({ ...room, resource_length: resources.length })
     }
 
@@ -220,10 +216,10 @@ router.get("/following-rooms", async (req, res) => {
     if (have_more) rooms.pop()
 
     const roomData = []
-    for (let i = 0; i < rooms.length; i++) {
-        const { room_id } = rooms[i]
+    for (let room of rooms) {
+        const { room_id } = { room }
         const { rows: resources } = await db.query("SELECT room_id FROM resources WHERE room_id=$1", [room_id])
-        roomData.push({ ...rooms[i], resource_length: resources.length })
+        roomData.push({ ...room, resource_length: resources.length })
     }
 
     res.json({ rooms: roomData, have_more })
