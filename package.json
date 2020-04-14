@@ -11,5 +11,8 @@
   "scripts": {
     "dev": "nodemon server.js",
     "start": "node server.js"
+  },
+  "devDependencies": {
+    "prettier": "^2.0.4"
   }
 }
