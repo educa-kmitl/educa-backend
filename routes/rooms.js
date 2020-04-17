@@ -19,7 +19,7 @@ router.get('/rooms', async (req, res) => {
 
   if (rooms[0].private && rooms[0].password != password) return res.status(400).json({ error: 'Invalid password' })
 
-  const resources = await db.query('SELECT resource_id, topic, video_url, file_url from resources WHERE room_id=$1', [room_id])
+  const resources = await db.query('SELECT resource_id, topic, video_url, file_url from resources WHERE room_id=$1 ORDER BY resource_id', [room_id])
 
   const likes = await db.query('SELECT user_id FROM likes WHERE room_id=$1', [room_id])
 
