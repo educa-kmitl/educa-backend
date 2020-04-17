@@ -40,7 +40,7 @@ router.patch('/users', async (req, res) => {
   const query = {
     name: 'update user',
     text: 'UPDATE users SET name=$1, profile_icon=$2 WHERE user_id=$3',
-    values: [name ? name : default_name, profile_icon ? profile_icon : default_profile_icon, user_id],
+    values: [name || default_name, profile_icon || default_profile_icon, user_id],
   }
   const { rowCount } = await db.query(query)
   if (rowCount) res.json({ user: { user_id } })
