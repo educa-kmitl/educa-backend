@@ -137,7 +137,7 @@ router.get('/my-rooms', async (req, res) => {
   const roomData = []
   for (let room of rooms) {
     const { room_id } = room
-    const { rows: resources } = await db.query('SELECT resource_id, video_url, file_url FROM resources WHERE room_id=$1', [room_id])
+    const { rows: resources } = await db.query('SELECT resource_id, topic, video_url, file_url FROM resources WHERE room_id=$1', [room_id])
     const { rows: likes } = await db.query('SELECT user_id FROM likes WHERE room_Id=$1', [room_id])
     roomData.push({
       ...room,
