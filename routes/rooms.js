@@ -18,9 +18,7 @@ router.get('/rooms', async (req, res) => {
 
   if (rooms[0].private && rooms[0].password != password) return res.status(400).json({ error: 'Invalid password' })
 
-  const resources = await db.query('SELECT resource_id, topic, video_url, file_url from resources WHERE room_id=$1', [
-    room_id,
-  ])
+  const resources = await db.query('SELECT resource_id, topic, video_url, file_url from resources WHERE room_id=$1', [room_id])
 
   const likes = await db.query('SELECT user_id FROM likes WHERE room_id=$1', [room_id])
 
@@ -64,7 +62,7 @@ router.post('/rooms', async (req, res) => {
 
 router.get('/room-privacy', async (req, res) => {
   const { room_id } = req.headers
-  if (!room_id) return res.status(400).json({ error: "Can't get room privacy" })
+  if (!room_id) return res.status(400).json({ error: 'Please provide room_id' })
 
   const { rows } = await db.query('SELECT private FROM rooms WHERE room_id=$1', [room_id])
   if (rows.length == 0) return res.status(400).json({ error: 'Room not found' })
@@ -105,12 +103,7 @@ router.patch('/rooms', async (req, res) => {
 
   if (private && !password) return res.status(400).json({ error: `Please provide room's password` })
 
-  const {
-    name: default_name,
-    private: default_private,
-    password: default_password,
-    subject: default_subject,
-  } = rooms[0]
+  const { name: default_name, private: default_private, password: default_password, subject: default_subject } = rooms[0]
   const updateQuery = {
     name: 'update room',
     text: 'UPDATE rooms SET name=$1, private=$2, password=$3, subject=$4 WHERE room_id=$5',
@@ -149,11 +142,12 @@ router.get('/my-rooms', async (req, res) => {
   const roomData = []
   for (let room of rooms) {
     const { room_id } = room
-    const { rows: resources } = await db.query('SELECT resource_id FROM resources WHERE room_id=$1', [room_id])
+    const { rows: resources } = await db.query('SELECT resource_id, video_url, file_url FROM resources WHERE room_id=$1', [room_id])
     const { rows: likes } = await db.query('SELECT user_id FROM likes WHERE room_Id=$1', [room_id])
     roomData.push({
       ...room,
       resource_length: resources.length,
+      resources,
       teacher_name: users[0].name,
       likes: likes.length,
     })
