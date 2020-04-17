@@ -1,6 +1,7 @@
 const Router = require('express-promise-router')
 const bcrypt = require('bcryptjs')
 const db = require('../db')
+const { insertResource } = require('./helpers/resourceHelper')
 
 const router = new Router()
 
@@ -47,14 +48,8 @@ router.post('/rooms', async (req, res) => {
   const { rows: rooms } = await db.query('SELECT room_id FROM rooms WHERE name=$1', [name])
   const { room_id } = rooms[0]
 
-  for (let i = 0; i < resources.length; i++) {
-    const { topic, video_url, file_url } = resources[i]
-    const resourceQuery = {
-      name: 'insert-resource',
-      text: 'INSERT INTO resources (topic, video_url, file_url, room_id) VALUES ($1, $2, $3, $4)',
-      values: [topic, video_url, file_url || null, room_id],
-    }
-    await db.query(resourceQuery)
+  for (let resource of resources) {
+    insertResource(resource, room_id)
   }
 
   res.json({ room: { room_id } })
