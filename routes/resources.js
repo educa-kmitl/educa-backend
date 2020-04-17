@@ -45,4 +45,17 @@ router.patch('/resources', async (req, res) => {
   res.json({ success: 'All resources are updated' })
 })
 
+
+router.delete('/resources', async (req, res)=>{
+  const {resources} = req.body
+  if(!resources) return res.status(400).json({error:'Please provide resource_id'})
+
+  for (let resource of resources){
+    await db.query('DELETE FROM resources WHERE resource_id=$1', [resource.resource_id])
+  }
+   
+  res.json({success: 'Successfully deleted'})
+
+})
+
 module.exports = router
