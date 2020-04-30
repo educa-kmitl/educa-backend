@@ -18,7 +18,7 @@ router.post("/register", async (req, res) => {
         const query = {
             name: 'insert-user',
             text: 'INSERT INTO users (email, name, password, profile_icon, role) VALUES ($1, $2, $3, $4, $5)',
-            values: [email, name, hashedPassword, profile_icon, role],
+            values: [email.toLowerCase(), name, hashedPassword, profile_icon, role],
         }
         await db.query(query)
 
