@@ -32,7 +32,7 @@ router.post("/register", async (req, res) => {
 
 router.post("/login", async (req, res) => {
     const { email, password } = req.body
-    const { rows: users } = await db.query("SELECT * FROM users WHERE email=$1", [email])
+    const { rows: users } = await db.query("SELECT * FROM users WHERE LOWER(email)=$1", [email.toLowerCase()])
 
     if (!(email && password)) return res.status(400).json({ error: "Can't login" })
 
