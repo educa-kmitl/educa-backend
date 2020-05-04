@@ -151,10 +151,10 @@ router.get('/my-rooms', async (req, res) => {
   res.json({ rooms: roomData, have_more })
 })
 
-router.get('/all-rooms', async (req, res) => {
-  const { text, sort_by, arrange_by, limit } = req.headers
+router.post('/all-rooms', async (req, res) => {
+  const { text, sort_by, arrange_by, limit } = req.body
   const queryStr = text ? text.toLowerCase() : ''
-
+  
   const limitQuery = limit ? Number.parseInt(limit) : 6
   const query = `SELECT R.room_id, U.user_id AS teacher_id, U.name AS teacher_name, 
                         R.name, R.subject, R.private, R.time AS date_created, COUNT(likes.room_id) AS likes FROM users U
